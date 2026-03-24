@@ -1,0 +1,164 @@
+// ============================================================
+// Prisma Schema — Sistema de Gestión Académica
+// ============================================================
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================================
+// ENTIDAD: ProgramaAcademico
+// ============================================================
+model ProgramaAcademico {
+  id                 Int         @id @default(autoincrement())
+  nombre             String
+  codigo             String      @unique
+  facultad           String
+  duracionSemestres  Int
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+
+  estudiantes        Estudiante[]
+  asignaturas        Asignatura[]
+
+  @@map("programas_academicos")
+}
+
+// ============================================================
+// ENTIDAD: Estudiante
+// ============================================================
+model Estudiante {
+  id                    Int                @id @default(autoincrement())
+  nombres               String
+  apellidos             String
+  codigoEstudiantil     String             @unique
+  documentoIdentidad    String             @unique
+  correoInstitucional   String             @unique
+  fechaNacimiento       DateTime
+  programaAcademicoId   Int
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+
+  programaAcademico     ProgramaAcademico  @relation(fields: [programaAcademicoId], references: [id])
+  matriculas            Matricula[]
+
+  @@map("estudiantes")
+}
+
+// ============================================================
+// ENTIDAD: Docente
+// ============================================================
+model Docente {
+  id                    Int                  @id @default(autoincrement())
+  nombres               String
+  apellidos             String
+  documentoIdentidad    String               @unique
+  tituloProfesional     String
+  especialidad          String
+  correoInstitucional   String               @unique
+  telefono              String?
+  createdAt             DateTime             @default(now())
+  updatedAt             DateTime             @updatedAt
+
+  asignaciones          AsignacionDocente[]
+
+  @@map("docentes")
+}
+
+// ============================================================
+// ENTIDAD: Asignatura
+// ============================================================
+model Asignatura {
+  id                  Int                @id @default(autoincrement())
+  nombre              String
+  codigo              String             @unique
+  creditos            Int
+  programaAcademicoId Int
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  programaAcademico   ProgramaAcademico  @relation(fields: [programaAcademicoId], references: [id])
+  asignaciones        AsignacionDocente[]
+
+  @@map("asignaturas")
+}
+
+// ============================================================
+// ENTIDAD: PeriodoAcademico
+// ============================================================
+model PeriodoAcademico {
+  id          Int                  @id @default(autoincrement())
+  nombre      String               @unique
+  fechaInicio DateTime
+  fechaFin    DateTime
+  activo      Boolean              @default(false)
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+
+  asignaciones AsignacionDocente[]
+
+  @@map("periodos_academicos")
+}
+
+// ============================================================
+// ENTIDAD: AsignacionDocente
+// ============================================================
+model AsignacionDocente {
+  id                 Int              @id @default(autoincrement())
+  docenteId          Int
+  asignaturaId       Int
+  periodoAcademicoId Int
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+
+  docente            Docente          @relation(fields: [docenteId], references: [id])
+  asignatura         Asignatura       @relation(fields: [asignaturaId], references: [id])
+  periodoAcademico   PeriodoAcademico @relation(fields: [periodoAcademicoId], references: [id])
+  matriculas         Matricula[]
+
+  @@unique([docenteId, asignaturaId, periodoAcademicoId])
+  @@map("asignaciones_docente")
+}
+
+// ============================================================
+// ENTIDAD: Matricula
+// ============================================================
+model Matricula {
+  id                   Int               @id @default(autoincrement())
+  estudianteId         Int
+  asignacionDocenteId  Int
+  fechaInscripcion     DateTime          @default(now())
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+
+  estudiante           Estudiante        @relation(fields: [estudianteId], references: [id])
+  asignacionDocente    AsignacionDocente @relation(fields: [asignacionDocenteId], references: [id])
+  calificacion         Calificacion?
+
+  @@unique([estudianteId, asignacionDocenteId])
+  @@map("matriculas")
+}
+
+// ============================================================
+// ENTIDAD: Calificacion
+// ============================================================
+model Calificacion {
+  id              Int       @id @default(autoincrement())
+  matriculaId     Int       @unique
+  nota1           Float
+  nota2           Float
+  nota3           Float
+  notaDefinitiva  Float
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  matricula       Matricula @relation(fields: [matriculaId], references: [id])
+
+  @@map("calificaciones")
+}
+

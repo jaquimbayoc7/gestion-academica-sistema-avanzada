@@ -1,0 +1,37 @@
+# ============================================================
+# .gitignore — root
+# ============================================================
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Node
+node_modules/
+dist/
+build/
+.next/
+
+# Prisma generated client
+backend/generated/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/settings.json
+.idea/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Docker
+*.dockerignore
+
+# Scripts de setup (no necesarios en producción)
+setup_github_project.py
+setup-github-project.ps1
+add_to_project.py
