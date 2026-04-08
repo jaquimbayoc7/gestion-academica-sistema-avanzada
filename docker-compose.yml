@@ -1,67 +1,77 @@
 # ============================================================
-# docker-compose.yml — Sistema de Gestión Académica
+# Docker Compose — Sistema de Gestión Académica
 # ============================================================
-# Servicios:
-#   postgres  → puerto 5432
-#   backend   → puerto 3001  (NestJS)
-#   frontend  → puerto 3000  (Next.js)
 #
-# Uso:
-#   docker compose up --build       # primera vez
-#   docker compose up -d            # modo detached
-#   docker compose down             # detener y eliminar contenedores
-#   docker compose down -v          # detener + eliminar volúmenes (limpia DB)
+# FLUJO DE DESARROLLO RECOMENDADO:
+#
+#   1. Solo DB en Docker:
+#        docker compose up db
+#
+#   2. Migraciones Prisma (desde backend/):
+#        npx prisma migrate dev       ← crea y aplica en desarrollo
+#        npx prisma migrate deploy    ← solo aplica en producción
+#        npx prisma generate          ← regenerar cliente
+#
+#   3. Backend local (desde backend/):
+#        npm run start:dev            → http://localhost:3001
+#
+#   4. Frontend local (desde frontend/):
+#        npm run dev                  → http://localhost:3000
+#
+# Opcionalmente, para levantar TODO en Docker:
+#   docker compose up --build -d
+#   docker compose logs -f backend
+#   docker compose down
+#
+# Variables de entorno: copiar .env.example → .env antes de empezar.
 # ============================================================
 
 services:
-  # ----------------------------------------------------------
-  # PostgreSQL
-  # ----------------------------------------------------------
-  postgres:
-    image: postgres:16-alpine
+  # ── Base de datos PostgreSQL ──────────────────────────────
+  db:
+    image: postgres:16-alpine        # Imagen oficial ligera de PostgreSQL 16
     container_name: gestion_academica_db
     restart: unless-stopped
+    env_file:
+      - .env                          # Carga DB_USER, DB_PASSWORD, DB_NAME
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
-      POSTGRES_DB: ${POSTGRES_DB:-gestion_academica}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
     ports:
-      - "5432:5432"
+      - '5432:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-gestion_academica}"]
+    healthcheck:                      # Verifica que PostgreSQL esté listo antes de arrancar el backend
+      test: ['CMD-SHELL', 'pg_isready -U ${DB_USER} -d ${DB_NAME}']
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 10s
-    networks:
-      - gestion_academica_net
 
-  # ----------------------------------------------------------
-  # Backend — NestJS
-  # ----------------------------------------------------------
+  # ── Backend NestJS ────────────────────────────────────────
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
     container_name: gestion_academica_backend
     restart: unless-stopped
+    env_file:
+      - .env
     environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-gestion_academica}?schema=public
+      # URL de conexión a PostgreSQL usando el nombre del servicio "db" como host
+      DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
       PORT: 3001
-      NODE_ENV: production
     ports:
-      - "3001:3001"
+      - '3001:3001'
     depends_on:
-      postgres:
-        condition: service_healthy
-    networks:
-      - gestion_academica_net
+      db:
+        condition: service_healthy    # Espera a que el healthcheck de "db" pase
+    volumes:
+      - ./backend:/app                # Hot-reload: cambios locales se reflejan al instante
+      - /app/node_modules             # Evita sobreescribir node_modules del contenedor
+      - /app/generated                # Evita sobreescribir el cliente Prisma generado
 
-  # ----------------------------------------------------------
-  # Frontend — Next.js
-  # ----------------------------------------------------------
+  # ── Frontend Next.js ──────────────────────────────────────
   frontend:
     build:
       context: ./frontend
@@ -69,22 +79,17 @@ services:
     container_name: gestion_academica_frontend
     restart: unless-stopped
     environment:
+      # URL del backend que el navegador usará para llamadas fetch
       NEXT_PUBLIC_API_URL: http://localhost:3001/api/v1
-      NODE_ENV: production
     ports:
-      - "3000:3000"
+      - '3000:3000'
     depends_on:
-      - backend
-    networks:
-      - gestion_academica_net
+      - backend                       # Inicia después del backend
+    volumes:
+      - ./frontend:/app               # Hot-reload para desarrollo frontend
+      - /app/node_modules
+      - /app/.next                    # Evita conflictos con la carpeta de build
 
-# ----------------------------------------------------------
-# Volúmenes y redes
-# ----------------------------------------------------------
+# ── Volúmenes con nombre ──────────────────────────────────────
 volumes:
   postgres_data:
-    driver: local
-
-networks:
-  gestion_academica_net:
-    driver: bridge

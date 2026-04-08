@@ -1,33 +1,23 @@
 # ============================================================
-# Dockerfile — Backend NestJS
+# Dockerfile — Backend NestJS (desarrollo con hot-reload)
+# ============================================================
+# El código fuente se monta como volumen desde docker-compose;
+# este Dockerfile solo instala las dependencias npm.
 # ============================================================
 
-# --- Build stage ---
-FROM node:22-alpine AS builder
+FROM node:22-alpine3.21
+
+RUN apk upgrade --no-cache
 
 WORKDIR /app
 
+# Instalar dependencias (el volumen del compose monta el source)
 COPY package*.json ./
 RUN npm ci
 
-COPY . .
-RUN npx prisma generate
-RUN npm run build
-
-# --- Production stage ---
-FROM node:22-alpine AS production
-
-WORKDIR /app
-
-COPY package*.json ./
-RUN npm ci --only=production
-
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder /app/node_modules/@prisma/client ./node_modules/@prisma/client
-COPY prisma ./prisma
-
 EXPOSE 3001
 
-# Run migrations then start
-CMD ["sh", "-c", "npx prisma migrate deploy && node dist/main"]
+# Las migraciones se ejecutan manualmente desde el host:
+#   cd backend && npx prisma migrate dev
+# El contenedor solo arranca el servidor en modo watch.
+CMD ["npm", "run", "start:dev"]

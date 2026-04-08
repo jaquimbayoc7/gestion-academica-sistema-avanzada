@@ -19,10 +19,10 @@ export type CreateCalificacionDto = {
 export type UpdateCalificacionDto = Partial<Omit<CreateCalificacionDto, "matriculaId">>;
 
 export const calificacionesService = {
+  findAll: () => api.get<Calificacion[]>("/calificacion"),
   findByMatricula: (matriculaId: number) =>
-    api.get<Calificacion>(`/calificacion/${matriculaId}`),
-  findByAsignacion: (asignacionId: number) =>
-    api.get<Calificacion[]>(`/calificacion?asignacionId=${asignacionId}`),
+    api.get<Calificacion>(`/calificacion/matricula/${matriculaId}`),
+  findOne: (id: number) => api.get<Calificacion>(`/calificacion/${id}`),
   create: (data: CreateCalificacionDto) =>
     api.post<Calificacion>("/calificacion", data),
   update: (id: number, data: UpdateCalificacionDto) =>

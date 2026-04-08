@@ -1,29 +1,20 @@
 # ============================================================
-# Dockerfile — Frontend Next.js
+# Dockerfile — Frontend Next.js (desarrollo con hot-reload)
+# ============================================================
+# El código fuente se monta como volumen desde docker-compose;
+# este Dockerfile solo instala las dependencias npm.
 # ============================================================
 
-# --- Build stage ---
-FROM node:22-alpine AS builder
+FROM node:22-alpine3.21
+
+RUN apk upgrade --no-cache
 
 WORKDIR /app
 
+# Instalar dependencias (el volumen del compose monta el source)
 COPY package*.json ./
 RUN npm ci
 
-COPY . .
-RUN npm run build
-
-# --- Production stage ---
-FROM node:22-alpine AS production
-
-WORKDIR /app
-
-ENV NODE_ENV=production
-
-COPY --from=builder /app/.next/standalone ./
-COPY --from=builder /app/.next/static ./.next/static
-COPY --from=builder /app/public ./public
-
 EXPOSE 3000
 
-CMD ["node", "server.js"]
+CMD ["npm", "run", "dev"]
