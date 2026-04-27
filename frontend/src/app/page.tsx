@@ -57,12 +57,27 @@ const modules = [
     icon: "⭐",
     sprint: "Sprint 3",
   },
+  {
+    href: "/estudiantes",
+    title: "Perfil Estudiante",
+    description: "Detalle con historial de matrículas y notas",
+    icon: "📊",
+    sprint: "Sprint 4",
+  },
+  {
+    href: "/docentes",
+    title: "Perfil Docente",
+    description: "Detalle con asignaciones por período",
+    icon: "🏫",
+    sprint: "Sprint 4",
+  },
 ];
 
 const sprintColors: Record<string, string> = {
   "Sprint 1": "bg-blue-100 text-blue-700",
   "Sprint 2": "bg-green-100 text-green-700",
   "Sprint 3": "bg-purple-100 text-purple-700",
+  "Sprint 4": "bg-orange-100 text-orange-700",
 };
 
 export default function HomePage() {
@@ -73,7 +88,7 @@ export default function HomePage() {
           🎓 Sistema de Gestión Académica
         </h1>
         <p className="text-zinc-500 mt-2">
-          Programación Avanzada 2026A — CORHUILA · Release 1 (Sprint 3)
+          Programación Avanzada 2026A — CORHUILA · Release 2 (Sprint 4)
         </p>
       </div>
 

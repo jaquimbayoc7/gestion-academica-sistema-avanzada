@@ -64,7 +64,7 @@ export default function RootLayout({
             </ul>
           </nav>
           <div className="p-4 border-t border-zinc-700">
-            <p className="text-xs text-zinc-500">CORHUILA — Sprint 3</p>
+            <p className="text-xs text-zinc-500">CORHUILA — Sprint 4 ✅</p>
           </div>
         </aside>
 

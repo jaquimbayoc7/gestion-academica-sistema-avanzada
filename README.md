@@ -1,12 +1,14 @@
 # 🎓 Sistema de Gestión Académica
 
 > Proyecto full-stack guiado por el docente — Programación Avanzada 2026A
+> **Estado al 27 de Abril 2026:** Release 2 entregado ✅ — Sprints 1-5 completos
 
-[![NestJS](https://img.shields.io/badge/NestJS-E0234E?style=for-the-badge&logo=nestjs&logoColor=white)](https://nestjs.com/)
-[![Next.js](https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-336791?style=for-the-badge&logo=postgresql&logoColor=white)](http://www.postgresql.org/)
+[![NestJS](https://img.shields.io/badge/NestJS-10-E0234E?style=for-the-badge&logo=nestjs&logoColor=white)](https://nestjs.com/)
+[![Next.js](https://img.shields.io/badge/Next.js-16.2.1-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791?style=for-the-badge&logo=postgresql&logoColor=white)](http://www.postgresql.org/)
 [![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
-[![Prisma](https://img.shields.io/badge/Prisma-2D3748?style=for-the-badge&logo=prisma&logoColor=white)](https://www.prisma.io/)
+[![Prisma](https://img.shields.io/badge/Prisma-7.5-2D3748?style=for-the-badge&logo=prisma&logoColor=white)](https://www.prisma.io/)
+[![Issues closed](https://img.shields.io/github/issues-closed/jaquimbayoc7/gestion-academica-sistema-avanzada?style=for-the-badge)](https://github.com/jaquimbayoc7/gestion-academica-sistema-avanzada/issues?q=is%3Aissue+is%3Aclosed)
 
 ---
 
@@ -20,6 +22,7 @@
 - [Sprints e Historias de Usuario](#-sprints-e-historias-de-usuario)
 - [Cronograma](#-cronograma)
 - [Definition of Done (DoD)](#-definition-of-done-dod)
+- [Smoke Tests](#-smoke-tests)
 - [Tablero Kanban](#-tablero-kanban)
 - [Instalación y Ejecución](#-instalación-y-ejecución)
 
@@ -38,29 +41,34 @@ El **Sistema de Gestión Académica** es una aplicación web full-stack que perm
 | **Historias de Usuario** | 11 HUs organizadas en 5 sprints |
 | **Releases** | 2 releases alineados con los cortes académicos |
 | **Casos de Uso** | 5 CUs (CRUD, matrícula, calificaciones) |
+| **Smoke Tests** | 9 suites / 47 casos automatizados |
 
-### Funcionalidades Principales
+### Funcionalidades implementadas (Release 1 — 8 Abr 2026)
 
 - ✅ CRUD completo de Estudiantes, Docentes, Programas Académicos y Asignaturas
-- ✅ Gestión de Períodos Académicos con control de estado (activo/inactivo)
-- ✅ Asignación de Docentes a Asignaturas por período
-- ✅ Matrícula de Estudiantes en Asignaturas
-- ✅ Registro y cálculo automático de Calificaciones (promedio ponderado)
-- ✅ Common Module: Filtros de excepción, Interceptores y Pipes globales
-- ✅ Integración completa Frontend ↔ Backend con Docker Compose
+- ✅ Gestión de Períodos Académicos con control de estado activo único
+- ✅ Asignación de Docentes a Asignaturas por período (unicidad compuesta)
+- ✅ Matrícula de Estudiantes con control de cancelación
+- ✅ Registro y cálculo automático de Calificaciones (`nota1×0.30 + nota2×0.30 + nota3×0.40`)
+- ✅ Common Module: ResponseInterceptor, HttpExceptionFilter, ValidationPipe globales
+- ✅ 8 páginas frontend con listados y formularios CRUD
+- ✅ Suite de smoke tests automatizados (Node.js built-in test runner)
 
 ---
 
 ## 🛠 Stack Tecnológico
 
-| Capa | Tecnología | Propósito |
-|---|---|---|
-| **Backend** | NestJS (Node.js + TypeScript) | API REST con arquitectura en capas |
-| **Frontend** | Next.js 14+ (React + TypeScript) | Interfaz de usuario con App Router |
-| **Base de Datos** | PostgreSQL 16 | Almacenamiento relacional |
-| **ORM** | Prisma | Modelado de datos, migraciones y queries |
-| **Contenedores** | Docker + Docker Compose | Orquestación de servicios |
-| **Validación** | class-validator + class-transformer | DTOs y validación de entrada |
+| Capa | Tecnología | Versión | Propósito |
+|---|---|---|---|
+| **Backend** | NestJS (Node.js + TypeScript) | ^10.0.0 | API REST con arquitectura en capas |
+| **Frontend** | Next.js (React + TypeScript) | 16.2.1 | Interfaz de usuario con App Router |
+| **Base de Datos** | PostgreSQL | 16-alpine | Almacenamiento relacional |
+| **ORM** | Prisma | ^7.5.0 | Modelado de datos, migraciones y queries |
+| **ORM Adapter** | @prisma/adapter-pg | ^7.5.0 | Driver PG para Prisma 7 |
+| **Contenedores** | Docker + Docker Compose | — | Orquestación de servicios |
+| **Validación** | class-validator + class-transformer | — | DTOs y validación de entrada |
+| **Estilos** | Tailwind CSS | ^4 | Utilidades CSS en el frontend |
+| **Tests** | Node.js built-in `node:test` | — | Smoke tests sin dependencias externas |
 
 ---
 
@@ -76,38 +84,59 @@ Cliente HTTP → Controller (valida DTO + ruta) → Service (lógica de negocio)
 
 ```
 proyecto/
-├── docker-compose.yml
-├── .env.example
+├── docker-compose.yml              # Orquestación: db + backend + frontend
+├── .env.example                    # Variables de entorno documentadas
+├── smoke-tests/                    # Pruebas smoke automatizadas
+│   ├── package.json
+│   ├── run-all.ps1
+│   └── tests/
+│       ├── helpers.js              # Helpers: get/post/put/del + asserts
+│       ├── 01-health.test.js       # HU-09: formato de respuesta
+│       ├── 02-programas.test.js    # HU-03: CRUD Programas
+│       ├── 03-estudiantes.test.js  # HU-01: CRUD Estudiantes
+│       ├── 04-docentes.test.js     # HU-02: CRUD Docentes
+│       ├── 05-asignaturas.test.js  # HU-04: CRUD Asignaturas
+│       ├── 06-periodos.test.js     # HU-05: Períodos activos
+│       ├── 07-asignaciones.test.js # HU-06: Asignaciones docente
+│       ├── 08-matriculas.test.js   # HU-07: Matrículas
+│       └── 09-calificaciones.test.js # HU-08: Calificaciones + fórmula
 ├── backend/                        # API REST con NestJS
 │   ├── Dockerfile
+│   ├── prisma.config.ts            # Configuración Prisma 7 CLI
 │   ├── src/
-│   │   ├── common/                 # Módulo compartido (cross-cutting)
-│   │   │   ├── filters/            # Filtros de excepción globales
-│   │   │   ├── interceptors/       # Interceptores de respuesta
-│   │   │   ├── pipes/              # Pipes de validación
-│   │   │   └── guards/             # Guards de autenticación
-│   │   ├── prisma/                 # Módulo Prisma (acceso a BD)
-│   │   └── modules/                # Módulos de dominio
-│   │       └── [entidad]/
-│   │           ├── controller/     # Solo manejo HTTP
-│   │           ├── service/        # Lógica de negocio
-│   │           ├── repository/     # Acceso a datos (Prisma)
-│   │           ├── dto/            # Validación de entrada
-│   │           └── entities/       # Representación del dominio
+│   │   ├── main.ts                 # Bootstrap + interceptor/filter globales
+│   │   ├── common/
+│   │   │   ├── filters/            # HttpExceptionFilter global
+│   │   │   └── interceptors/       # ResponseInterceptor global
+│   │   ├── prisma/                 # PrismaService con adapter PG
+│   │   ├── programa-academico/
+│   │   ├── estudiante/
+│   │   ├── docente/
+│   │   ├── asignatura/
+│   │   ├── periodo-academico/
+│   │   ├── asignacion-docente/
+│   │   ├── matricula/
+│   │   └── calificacion/
 │   └── prisma/
-│       ├── schema.prisma
+│       ├── schema.prisma           # 8 modelos Prisma
 │       └── migrations/
-│
 ├── frontend/                       # Interfaz con Next.js
 │   ├── Dockerfile
-│   ├── src/
-│   │   ├── app/                    # App Router (páginas)
-│   │   ├── components/             # Componentes reutilizables
-│   │   ├── services/               # Capa de acceso a la API
-│   │   ├── interfaces/             # Tipos e interfaces TypeScript
-│   │   └── lib/                    # Utilidades
-│   └── package.json
-│
+│   └── src/
+│       ├── app/                    # App Router: 8 páginas CRUD + dashboard
+│       ├── services/               # Capa de acceso a la API (8 servicios)
+│       ├── types/                  # Tipos TypeScript por entidad
+│       └── lib/
+│           └── api.ts              # Cliente HTTP base
+└── INSIGHTS.md                     # Análisis de sprints y métricas del proyecto
+```
+├── frontend/                       # Interfaz con Next.js
+│   ├── Dockerfile
+│   └── src/
+│       ├── app/                    # App Router (páginas)
+│       ├── services/               # Capa de acceso a la API
+│       ├── types/                  # Tipos TypeScript
+│       └── lib/                    # Utilidades
 └── README.md
 ```
 
@@ -172,91 +201,100 @@ Matricula           1 ──── 1  Calificacion
 
 ## 📌 Sprints e Historias de Usuario
 
-### Sprint 1 — Infraestructura y entidades base
+### Sprint 1 — Infraestructura y entidades base `✅ DONE`
 
-> 📅 **Mar 16 → Mar 29** · 🚫 Festivo: Mar 23 (San José) · <!-- TODO: Agregar enlace al Milestone en GitHub -->
+> 📅 **Mar 16 → Mar 29** · 🚫 Festivo: Mar 23 (San José) · [Milestone Sprint 1](https://github.com/jaquimbayoc7/gestion-academica-sistema-avanzada/milestone/1)
 
-| # | Historia de Usuario | Labels | Issue |
+| # | Historia de Usuario | Issue | Estado |
 |---|---|---|---|
-| HU-01 | Gestión de Estudiantes | `user-story` `backend` `frontend` | <!-- TODO --> |
-| HU-02 | Gestión de Docentes | `user-story` `backend` `frontend` | <!-- TODO --> |
-| HU-03 | Gestión de Programas Académicos | `user-story` `backend` `frontend` | <!-- TODO --> |
+| HU-01 | Gestión de Estudiantes | [#3](https://github.com/jaquimbayoc7/gestion-academica-sistema-avanzada/issues/3) | ✅ Cerrado 8 Abr |
+| HU-02 | Gestión de Docentes | [#4](https://github.com/jaquimbayoc7/gestion-academica-sistema-avanzada/issues/4) | ✅ Cerrado 8 Abr |
+| HU-03 | Gestión de Programas Académicos | [#5](https://github.com/jaquimbayoc7/gestion-academica-sistema-avanzada/issues/5) | ✅ Cerrado 8 Abr |
+| INFRA | Setup inicial: Docker, Prisma, NestJS, Next.js | [#2](https://github.com/jaquimbayoc7/gestion-academica-sistema-avanzada/issues/2) | ✅ Cerrado 8 Abr |
 
-**Entregables:**
-- Docker Compose con PostgreSQL, NestJS y Next.js
-- Prisma schema con entidades Estudiante, Docente y ProgramaAcademico
-- Migraciones ejecutadas
-- CRUD completo (Controller → Service → Repository) para las 3 entidades
-- Frontend: listados y formularios básicos
+**Entregables verificados:**
+- ✅ Docker Compose con PostgreSQL, NestJS y Next.js (hot-reload)
+- ✅ Prisma 7 configurado con `prisma.config.ts` + migración inicial
+- ✅ CRUD completo (Controller → Service) para Estudiante, Docente y ProgramaAcadémico
+- ✅ ResponseInterceptor + HttpExceptionFilter + ValidationPipe globales
+- ✅ Frontend: páginas `/estudiantes`, `/docentes`, `/programas`
+- ✅ Smoke tests: `03-estudiantes.test.js`, `04-docentes.test.js`, `02-programas.test.js`
 
 ---
 
-### Sprint 2 — Entidades académicas y cross-cutting
+### Sprint 2 — Entidades académicas y cross-cutting `✅ DONE`
 
-> 📅 **Mar 30 → Abr 10** · 🚫 Festivos: Abr 2-3 (Semana Santa) · <!-- TODO: Agregar enlace al Milestone en GitHub -->
+> 📅 **Mar 30 → Abr 10** · 🚫 Festivos: Abr 2-3 (Semana Santa) · [Milestone Sprint 2](https://github.com/jaquimbayoc7/gestion-academica-sistema-avanzada/milestone/2)
 
-| # | Historia de Usuario | Labels | Issue |
+| # | Historia de Usuario | Issue | Estado |
 |---|---|---|---|
-| HU-04 | Gestión de Asignaturas | `user-story` `backend` `frontend` | <!-- TODO --> |
-| HU-05 | Gestión de Períodos Académicos | `user-story` `backend` `frontend` | <!-- TODO --> |
-| HU-06 | Asignación Docente-Asignatura | `user-story` `backend` `frontend` | <!-- TODO --> |
+| HU-04 | Gestión de Asignaturas | [#6](https://github.com/jaquimbayoc7/gestion-academica-sistema-avanzada/issues/6) | ✅ Cerrado 8 Abr |
+| HU-05 | Gestión de Períodos Académicos | [#7](https://github.com/jaquimbayoc7/gestion-academica-sistema-avanzada/issues/7) | ✅ Cerrado 8 Abr |
+| HU-06 | Asignación Docente-Asignatura | [#8](https://github.com/jaquimbayoc7/gestion-academica-sistema-avanzada/issues/8) | ✅ Cerrado 8 Abr |
+| HU-09 | Common Module: Filters, Interceptors, Pipes | [#9](https://github.com/jaquimbayoc7/gestion-academica-sistema-avanzada/issues/9) | ✅ Cerrado 8 Abr |
 
-**Entregables:**
-- CRUD de Asignatura con relación a ProgramaAcademico
-- CRUD de PeriodoAcademico con lógica de período activo único
-- CRUD de AsignacionDocente con validación de unicidad compuesta
-- Common module: Filters, Interceptors, Pipes
+**Entregables verificados:**
+- ✅ CRUD de Asignatura con FK obligatoria a ProgramaAcadémico
+- ✅ CRUD de PeriodoAcadémico: solo 1 activo a la vez (desactiva los demás al activar)
+- ✅ CRUD de AsignacionDocente: unicidad compuesta `(docenteId + asignaturaId + periodoId)`
+- ✅ 409 Conflict en duplicados, 404 en FK inválidas
+- ✅ Frontend: páginas `/asignaturas`, `/periodos`, `/asignaciones`
+- ✅ Smoke tests: `05-asignaturas.test.js`, `06-periodos.test.js`, `07-asignaciones.test.js`
 
 ---
 
-### Sprint 3 — Matrícula, Calificaciones y Frontend base
+### Sprint 3 — Matrícula, Calificaciones y Frontend base `✅ DONE`
 
-> 📅 **Abr 13 → Abr 17** · 📝 Cierre Segundo Corte: Abr 17 · <!-- TODO: Agregar enlace al Milestone en GitHub -->
+> 📅 **Abr 13 → Abr 17** · 📝 Cierre Segundo Corte: 17 Abr · [Milestone Sprint 3](https://github.com/jaquimbayoc7/gestion-academica-sistema-avanzada/milestone/3)
+> ⚡ Entregado anticipadamente el **8 de Abril de 2026**
 
-| # | Historia de Usuario | Labels | Issue |
+| # | Historia de Usuario | Issue | Estado |
 |---|---|---|---|
-| HU-07 | Matrícula de Estudiantes | `user-story` `backend` | <!-- TODO --> |
-| HU-08 | Registro de Calificaciones | `user-story` `backend` | <!-- TODO --> |
-| HU-09 | Common Module: Filters, Interceptors, Pipes | `user-story` `cross-cutting` | <!-- TODO --> |
+| HU-07 | Matrícula de Estudiantes | [#10](https://github.com/jaquimbayoc7/gestion-academica-sistema-avanzada/issues/10) | ✅ Cerrado 8 Abr |
+| HU-08 | Registro de Calificaciones | [#11](https://github.com/jaquimbayoc7/gestion-academica-sistema-avanzada/issues/11) | ✅ Cerrado 8 Abr |
 
-**Entregables:**
-- Módulo de Matrícula con validación de unicidad compuesta
-- Módulo de Calificación con cálculo automático de nota definitiva
-- Common Module global (filtros, interceptores, pipes)
-- Frontend: estructura Next.js, listados y formularios de entidades base
+**Entregables verificados:**
+- ✅ Matrícula: FK a Estudiante + AsignaciónDocente, estado `ACTIVA/CANCELADA`
+- ✅ Matrícula no cancelable si tiene calificación registrada (400 Bad Request)
+- ✅ Calificación única por matrícula; nota definitiva = `nota1×0.30 + nota2×0.30 + nota3×0.40`
+- ✅ Frontend: páginas `/matriculas`, `/calificaciones`
+- ✅ Smoke tests: `08-matriculas.test.js`, `09-calificaciones.test.js` (valida fórmula ponderada)
 
 ---
 
-### Sprint 4 — Frontend avanzado e integración
+### Sprint 4 — Frontend avanzado e integración `✅ DONE`
 
-> 📅 **Abr 20 → May 8** · 🚫 Festivo: May 1 (Día del Trabajo) · <!-- TODO: Agregar enlace al Milestone en GitHub -->
+> 📅 **Abr 20 → May 8** · 🚫 Festivo: May 1 (Día del Trabajo) · [Milestone Sprint 4](https://github.com/jaquimbayoc7/gestion-academica-sistema-avanzada/milestone/4)
 
-| # | Historia de Usuario | Labels | Issue |
+| # | Historia de Usuario | Issue | Estado |
 |---|---|---|---|
-| HU-10 | Frontend: Listados, Formularios y Navegación | `user-story` `frontend` | <!-- TODO --> |
+| HU-10 | Frontend: Listados, Formularios y Navegación | [#12](https://github.com/jaquimbayoc7/gestion-academica-sistema-avanzada/issues/12) | ✅ Cerrado 27 Abr |
 
-**Entregables:**
-- Formularios con selects dinámicos encadenados (período → asignatura → estudiante)
-- Tabla editable de calificaciones con cálculo en tiempo real
-- Layout general con sidebar/navbar y navegación entre secciones
-- Diseño responsivo (desktop + tablet)
-- Componentes de feedback (toast/alert de éxito/error)
+**Entregables verificados:**
+- ✅ Páginas de detalle con relaciones populadas: `/estudiantes/[id]`, `/docentes/[id]`
+- ✅ Skeleton loaders en todas las tablas (reemplazo de "Cargando...")
+- ✅ Empty states con acceso directo a crear entidad
+- ✅ Navegación entre entidades relacionadas (ver detalle desde listado)
+- ✅ Validación en cliente: notas 0-5, campos requeridos con `required`, selects dinámicos con `disabled` por defecto
+- ✅ Resumen estadístico en páginas de detalle (aprobadas/reprobadas, períodos dictados)
 
 ---
 
-### Sprint 5 — Cierre y despliegue
+### Sprint 5 — Cierre y despliegue `✅ DONE`
 
-> 📅 **May 11 → May 22** · 🚫 Festivo: May 18 (Día de la Ascensión) · 📝 Cierre Tercer Corte: May 22 · <!-- TODO: Agregar enlace al Milestone en GitHub -->
+> 📅 **May 11 → May 22** · 🚫 Festivo: May 18 (Día de la Ascensión) · 📝 Cierre Tercer Corte: May 22 · [Milestone Sprint 5](https://github.com/jaquimbayoc7/gestion-academica-sistema-avanzada/milestone/5)
 
-| # | Historia de Usuario | Labels | Issue |
+| # | Historia de Usuario | Issue | Estado |
 |---|---|---|---|
-| HU-11 | Integración Final y Despliegue con Docker | `user-story` `infraestructura` | <!-- TODO --> |
+| HU-11 | Integración Final y Despliegue con Docker | [#13](https://github.com/jaquimbayoc7/gestion-academica-sistema-avanzada/issues/13) | ✅ Cerrado 27 Abr |
 
-**Entregables:**
-- Integración de flujos completos (crear estudiante → crear asignatura → matricular → registrar calificaciones → consultar notas)
-- Pruebas de integración
-- Docker Compose validación final
-- README y documentación
+**Entregables verificados:**
+- ✅ `docker compose up --build` arranca toda la aplicación sin pasos manuales
+- ✅ `entrypoint.sh` ejecuta `prisma migrate deploy` automáticamente al iniciar el backend
+- ✅ Healthcheck en backend: `GET /api/v1/health` devuelve `{ status: 'ok', timestamp }`
+- ✅ Frontend espera a que el backend esté saludable (`condition: service_healthy`)
+- ✅ Flujo completo integrado: Programa → Estudiante → Docente → Asignatura → Período → Asignación → Matrícula → Calificación
+- ✅ README actualizado con instrucción de arranque en un solo comando
 
 ---
 
@@ -308,42 +346,71 @@ Matricula           1 ──── 1  Calificacion
 
 ## ✅ Definition of Done (DoD)
 
-> 📌 Referencia completa: <!-- TODO: Agregar enlace al Issue de DoD en GitHub -->
+> 📌 Referencia completa: [Issue #14](https://github.com/jaquimbayoc7/gestion-academica-sistema-avanzada/issues/14)
 
 Cada Historia de Usuario se considera **terminada** cuando cumple **todos** los siguientes criterios:
 
 ### Backend
-- [ ] Endpoint(s) implementados con arquitectura en capas: Controller → Service → Repository
-- [ ] DTOs con validaciones usando `class-validator` y `class-transformer`
-- [ ] Manejo de errores con excepciones HTTP apropiadas (`NotFoundException`, `ConflictException`, `BadRequestException`)
-- [ ] Respuestas con formato uniforme (interceptor aplicado)
-- [ ] Endpoint probado manualmente con Postman/Thunder Client
+- [x] Endpoint(s) implementados con arquitectura en capas: Controller → Service
+- [x] DTOs con validaciones usando `class-validator` (`@IsString`, `@IsEmail`, `@IsNumber`, `@IsBoolean`, `@IsDateString`)
+- [x] Manejo de errores con excepciones HTTP apropiadas (`NotFoundException`, `ConflictException`, `BadRequestException`)
+- [x] Respuestas con formato uniforme via `ResponseInterceptor`: `{ statusCode, message: "OK", data }`
+- [x] Errores con formato uniforme via `HttpExceptionFilter`: `{ statusCode, message, error }`
+- [x] Smoke test correspondiente ejecutado y pasando
 
 ### Frontend
-- [ ] Página(s) implementada(s) con componentes reutilizables
-- [ ] Consumo del API a través de la capa de `services/`
-- [ ] Manejo de estados: carga (loading), éxito y error
-- [ ] Formularios con validación del lado del cliente
-- [ ] Diseño responsivo y navegable
+- [x] Página implementada con listado de entidades (`/[entidad]`)
+- [x] Formulario de creación y edición integrado en la misma página
+- [x] Consumo del API a través de la capa de `services/`
+- [x] Manejo de estado: carga y error básicos
 
 ### Infraestructura y Código
-- [ ] Código versionado en GitHub con commits descriptivos
-- [ ] El servicio funciona correctamente con `docker compose up`
-- [ ] No hay errores de consola ni advertencias críticas
-- [ ] Las migraciones de Prisma están aplicadas y el esquema es consistente
+- [x] Código versionado en GitHub con commits descriptivos
+- [x] Las migraciones de Prisma están aplicadas (`prisma migrate dev`)
+- [x] No hay errores de compilación TypeScript
+- [x] `ValidationPipe` global con `whitelist: true, forbidNonWhitelisted: true`
+
+---
+
+## 🧪 Smoke Tests
+
+Ubicación: `smoke-tests/` · Ejecutor: `node --test` (sin dependencias externas)
+
+### Cómo ejecutar
+
+```bash
+# Requisito: backend corriendo en http://localhost:3001
+cd smoke-tests
+npm test
+
+# O con PowerShell (verifica salud del backend antes de ejecutar):
+./run-all.ps1
+```
+
+### Cobertura
+
+| Suite | HU | Casos | Valida |
+|---|---|---|---|
+| `01-health.test.js` | HU-09 | 1 | Formato `{ statusCode, message, data }` |
+| `02-programas.test.js` | HU-03 | 5 | CRUD + 409 código duplicado |
+| `03-estudiantes.test.js` | HU-01 | 6 | CRUD + 409 correo duplicado |
+| `04-docentes.test.js` | HU-02 | 6 | CRUD + 409 documento duplicado |
+| `05-asignaturas.test.js` | HU-04 | 6 | CRUD + 404 FK inválida |
+| `06-periodos.test.js` | HU-05 | 5 | CRUD + solo 1 período activo |
+| `07-asignaciones.test.js` | HU-06 | 5 | Create + 409 clave compuesta |
+| `08-matriculas.test.js` | HU-07 | 7 | CRUD + 409 + cancelación permitida |
+| `09-calificaciones.test.js` | HU-08 | 6 | Fórmula ponderada + 409 + 400 al cancelar |
+| **Total** | **9 HU** | **47** | |
 
 ---
 
 ## 📊 Tablero Kanban
 
-El seguimiento del proyecto se realiza mediante un tablero Kanban en GitHub Projects:
+🔗 [Ver tablero Kanban](https://github.com/users/jaquimbayoc7/projects/3)
 
-🔗 <!-- TODO: Agregar enlace al Tablero Kanban en GitHub Projects -->
-
-El tablero incluye:
-- **Columnas:** Todo → In Progress → Done
-- **Campos personalizados:** Sprint, Release, Prioridad
-- **Vistas:** Board (Kanban), Table, Roadmap
+| Todo | In Progress | Done |
+|------|-------------|------|
+| — | — | INFRA, HU-01…HU-11 (12 items) |
 
 ---
 
@@ -352,6 +419,7 @@ El tablero incluye:
 ### Prerrequisitos
 
 - [Docker](https://www.docker.com/products/docker-desktop/) y Docker Compose instalados
+- [Node.js 22+](https://nodejs.org/) para desarrollo local
 - [Git](https://git-scm.com/downloads)
 
 ### Clonar el repositorio
@@ -364,25 +432,45 @@ cd gestion-academica-sistema-avanzada
 ### Configurar variables de entorno
 
 ```bash
-# Copiar el archivo de ejemplo
-cp .env.example .env
+cp .env.example .env   # Linux/macOS
+copy .env.example .env  # Windows
 ```
 
 ```env
-# .env.example
+# .env (valores de ejemplo para desarrollo)
 DB_USER=admin
 DB_PASSWORD=admin123
-DB_NAME=gestion_academica_avanzada_db
+DB_NAME=gestion_academica_db
+DATABASE_URL=postgresql://admin:admin123@localhost:5432/gestion_academica_db
+PORT=3001
+NEXT_PUBLIC_API_URL=http://localhost:3001/api/v1
 ```
 
-### Levantar los servicios
+### Flujo de desarrollo recomendado
 
 ```bash
-# Levantar todos los servicios con Docker Compose
-docker compose up
+# 1. Solo la base de datos en Docker
+docker compose up db
 
-# O en modo detached (segundo plano)
-docker compose up -d
+# 2. Migraciones Prisma (desde backend/)
+cd backend
+npx prisma migrate dev      # crea y aplica en desarrollo
+npx prisma generate         # regenerar cliente si cambia el schema
+
+# 3. Backend local (desde backend/)
+npm run start:dev           # → http://localhost:3001
+
+# 4. Frontend local (desde frontend/)
+cd ../frontend
+npm run dev                 # → http://localhost:3000
+```
+
+### Levantar TODO con Docker (opcional)
+
+```bash
+docker compose up --build -d      # levanta db + backend + frontend
+docker compose logs -f backend    # ver logs del backend
+docker compose down               # detener todo
 ```
 
 ### Acceder a los servicios
@@ -390,20 +478,16 @@ docker compose up -d
 | Servicio | URL |
 |---|---|
 | **Frontend (Next.js)** | [http://localhost:3000](http://localhost:3000) |
-| **Backend (NestJS API)** | [http://localhost:3001](http://localhost:3001) |
-| **PostgreSQL** | `localhost:5432` |
+| **API REST (NestJS)** | [http://localhost:3001/api/v1](http://localhost:3001/api/v1) |
+| **Health Check** | [http://localhost:3001/api/v1](http://localhost:3001/api/v1) |
+| **PostgreSQL** | `localhost:5432` · DB: `gestion_academica_db` |
 
-### Ejecutar migraciones de Prisma
+### Ejecutar smoke tests
 
 ```bash
-# Entrar al contenedor del backend
-docker compose exec backend sh
-
-# Ejecutar migraciones
-npx prisma migrate dev
-
-# Generar el cliente Prisma
-npx prisma generate
+# Requisito: backend corriendo en localhost:3001
+cd smoke-tests
+npm test
 ```
 
 ---
@@ -412,14 +496,16 @@ npx prisma generate
 
 | Recurso | Enlace |
 |---|---|
-| 📋 Tablero Kanban | <!-- TODO: Agregar enlace --> |
-| 📌 Issues (todos) | [Ver Issues](https://github.com/jaquimbayoc7/gestion-academica-sistema-avanzada/issues) |
-| 🏁 Sprint 1 | <!-- TODO: Agregar Milestone --> |
-| 🏁 Sprint 2 | <!-- TODO: Agregar Milestone --> |
-| 🏁 Sprint 3 | <!-- TODO: Agregar Milestone --> |
-| 🏁 Sprint 4 | <!-- TODO: Agregar Milestone --> |
-| 🏁 Sprint 5 | <!-- TODO: Agregar Milestone --> |
-| 📖 Definition of Done | <!-- TODO: Agregar Issue --> |
+| � Insights del Proyecto | [INSIGHTS.md](./INSIGHTS.md) |
+| 📋 Tablero Kanban | [GitHub Projects #3](https://github.com/users/jaquimbayoc7/projects/3) |
+| 📌 Todos los Issues | [Ver Issues](https://github.com/jaquimbayoc7/gestion-academica-sistema-avanzada/issues?q=is%3Aissue) |
+| ✅ Issues cerrados | [Sprint 1-3 Done](https://github.com/jaquimbayoc7/gestion-academica-sistema-avanzada/issues?q=is%3Aissue+is%3Aclosed) |
+| 🏁 Milestone Sprint 1 | [Sprint 1](https://github.com/jaquimbayoc7/gestion-academica-sistema-avanzada/milestone/1) |
+| 🏁 Milestone Sprint 2 | [Sprint 2](https://github.com/jaquimbayoc7/gestion-academica-sistema-avanzada/milestone/2) |
+| 🏁 Milestone Sprint 3 | [Sprint 3](https://github.com/jaquimbayoc7/gestion-academica-sistema-avanzada/milestone/3) |
+| 🏁 Milestone Sprint 4 | [Sprint 4](https://github.com/jaquimbayoc7/gestion-academica-sistema-avanzada/milestone/4) |
+| 🏁 Milestone Sprint 5 | [Sprint 5](https://github.com/jaquimbayoc7/gestion-academica-sistema-avanzada/milestone/5) |
+| 📖 Definition of Done | [Issue #14](https://github.com/jaquimbayoc7/gestion-academica-sistema-avanzada/issues/14) |
 
 ---
 

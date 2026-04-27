@@ -88,7 +88,37 @@ export default function AsignaturasPage() {
         </form>
       )}
 
-      {loading ? <p className="text-zinc-500 text-sm">Cargando...</p> : asignaturas.length === 0 ? <p className="text-zinc-400 text-sm">No hay asignaturas registradas.</p> : (
+      {loading ? (
+        <div className="bg-white rounded-xl border border-zinc-200 overflow-hidden">
+          <table className="w-full text-sm">
+            <thead className="bg-zinc-50 border-b border-zinc-200">
+              <tr>
+                {["Nombre", "Código", "Créditos", "Programa", "Acciones"].map((h) => (
+                  <th key={h} className="text-left px-4 py-3 font-medium text-zinc-600">{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-zinc-100">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <tr key={i}>
+                  {Array.from({ length: 5 }).map((__, j) => (
+                    <td key={j} className="px-4 py-3">
+                      <div className="h-4 bg-zinc-200 rounded animate-pulse" />
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : asignaturas.length === 0 ? (
+        <div className="py-12 text-center bg-white rounded-xl border border-zinc-200">
+          <p className="text-zinc-400 text-sm">No hay asignaturas registradas.</p>
+          <button onClick={() => setShowForm(true)} className="mt-3 text-xs px-3 py-1.5 bg-zinc-900 text-white rounded-lg hover:bg-zinc-700 transition-colors">
+            + Registrar primera asignatura
+          </button>
+        </div>
+      ) : (
         <div className="bg-white rounded-xl border border-zinc-200 overflow-hidden">
           <table className="w-full text-sm">
             <thead className="bg-zinc-50 border-b border-zinc-200">

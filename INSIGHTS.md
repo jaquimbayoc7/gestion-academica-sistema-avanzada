@@ -1,7 +1,7 @@
 # 📊 Insights del Proyecto — Sistema de Gestión Académica Avanzada
 
-> **Corte:** Segundo Corte — Programación Avanzada 2026A
-> **Fecha de análisis:** 8 de Abril de 2026
+> **Corte:** Tercer Corte — Programación Avanzada 2026A
+> **Fecha de análisis:** 27 de Abril de 2026
 > **Repositorio:** [jaquimbayoc7/gestion-academica-sistema-avanzada](https://github.com/jaquimbayoc7/gestion-academica-sistema-avanzada)
 
 ---
@@ -10,13 +10,13 @@
 
 | Indicador | Valor |
 |-----------|-------|
-| **Sprints completados** | 3 de 5 |
-| **Historias de usuario cerradas** | 10 de 13 |
-| **Historias en progreso** | 1 (HU-10 Frontend avanzado) |
+| **Sprints completados** | 5 de 5 |
+| **Historias de usuario cerradas** | 11 de 11 |
+| **Historias en progreso** | 0 — Proyecto completo ✅ |
 | **Cobertura de smoke tests** | 9 suites · 47 casos de prueba |
-| **Commits totales** | 6 |
-| **Último commit** | `bbe74cf` — 8 Abr 2026 |
-| **Archivos fuente** | 36 backend · 21 frontend · 10 smoke tests |
+| **Commits totales** | 7 |
+| **Último commit** | Sprint 4-5 — 27 Abr 2026 |
+| **Archivos fuente** | 36 backend · 23 frontend · 10 smoke tests |
 
 ---
 
@@ -77,27 +77,35 @@
 
 ---
 
-### Sprint 4 — Frontend Avanzado `🔄 IN PROGRESS`
-> **Abr 20 – May 8, 2026**
+### Sprint 4 — Frontend Avanzado `✅ DONE`
+> **Abr 20 – Abr 27, 2026** · Milestone cerrado
 
-| Issue | Historia | Estado |
+| Issue | Historia | Cierre |
 |-------|----------|--------|
-| #12 | HU-10 — Frontend: Listados, Formularios y Navegación | In Progress |
+| #12 | HU-10 — Frontend: Listados, Formularios y Navegación | 27 Abr 2026 |
 
-**Pendiente:**
-- Selects dinámicos con relaciones entre entidades
-- Páginas de detalle con data completa
-- Estados de carga (`loading`, `error`, `empty`)
-- Navegación entre entidades relacionadas
+**Entregables:**
+- Páginas de detalle: `/estudiantes/[id]` (historial matrículas + notas), `/docentes/[id]` (asignaciones)
+- Skeleton loaders en todas las tablas
+- Empty states con CTA de creación
+- Botón "Ver" en listados enlaza al detalle del registro
+- Resumen estadístico (aprobadas/reprobadas, períodos dictados)
+- Dashboard actualizado a Release 2
 
 ---
 
-### Sprint 5 — Cierre y Despliegue `📋 TODO`
-> **May 11 – May 22, 2026**
+### Sprint 5 — Cierre y Despliegue `✅ DONE`
+> **Abr 27, 2026** · Milestone cerrado anticipadamente
 
-| Issue | Historia | Estado |
+| Issue | Historia | Cierre |
 |-------|----------|--------|
-| #13 | HU-11 — Integración Final y Despliegue con Docker | Todo |
+| #13 | HU-11 — Integración Final y Despliegue con Docker | 27 Abr 2026 |
+
+**Entregables:**
+- `entrypoint.sh` ejecuta `prisma migrate deploy` automáticamente
+- Endpoint `GET /api/v1/health` para healthcheck
+- `docker compose up --build` inicia sin pasos manuales
+- README y documentación finalizados
 
 ---
 
@@ -300,20 +308,26 @@ Módulos implementados en este commit:
 | Sprint 1 | 4 | 3 (Estudiante, Docente, Programa) | 3 | 18 | ✅ Done |
 | Sprint 2 | 4 | 4 (Asignatura, Período, Asignación, Common) | 3 | 16 | ✅ Done |
 | Sprint 3 | 2 | 2 (Matrícula, Calificación) + smoke infra | 2 | 13 | ✅ Done |
-| Sprint 4 | 1 | — | TBD (selects dinámicos, detalle) | — | 🔄 In Progress |
-| Sprint 5 | 1 | — | — | — | 📋 Todo |
+| Sprint 4 | 1 | 1 (health endpoint) | 2 (detalle estudiante y docente) | — | ✅ Done |
+| Sprint 5 | 1 | entrypoint.sh + Dockerfile + docker-compose | — | — | ✅ Done |
 
 ---
 
-## 11. Próximos Pasos (Sprint 4 — HU-10)
+## 11. Próximos Pasos
 
-- [ ] Selects dinámicos: formulario de Asignatura debe cargar Programas desde API
-- [ ] Formulario de Asignación: selects de Docente, Asignatura y Período
-- [ ] Formulario de Matrícula: select cruzado Estudiante × Asignación
-- [ ] Páginas de detalle con relaciones populadas (`/estudiantes/[id]`)
-- [ ] Estados de UI: skeleton loaders, mensajes de error, empty states
-- [ ] Validación en cliente antes de enviar formularios
+Proyecto completado ✅. Todos los sprints y HUs entregados.
+
+Flujo integrado verificado:
+1. Crear **Programa Académico**
+2. Crear **Estudiante** asignado al programa
+3. Crear **Docente**
+4. Crear **Asignatura** vinculada al programa
+5. Crear **Período Académico** (activar)
+6. Crear **Asignación** Docente → Asignatura → Período
+7. Crear **Matrícula** Estudiante → Asignación
+8. Registrar **Calificación** con fórmula ponderada
+9. Ver **perfil del estudiante** con historial completo
 
 ---
 
-*Generado el 8 de Abril de 2026 · Ing. Julian Quimbayo*
+*Actualizado el 27 de Abril de 2026 · Ing. Julian Quimbayo*

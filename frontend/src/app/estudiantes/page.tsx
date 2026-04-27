@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import {
   estudiantesService,
   Estudiante,
@@ -183,9 +184,35 @@ export default function EstudiantesPage() {
       )}
 
       {loading ? (
-        <p className="text-zinc-500 text-sm">Cargando...</p>
+        <div className="bg-white rounded-xl border border-zinc-200 overflow-hidden">
+          <table className="w-full text-sm">
+            <thead className="bg-zinc-50 border-b border-zinc-200">
+              <tr>
+                {["Nombre", "Código", "Correo", "Programa", "Acciones"].map((h) => (
+                  <th key={h} className="text-left px-4 py-3 font-medium text-zinc-600">{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-zinc-100">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <tr key={i}>
+                  {Array.from({ length: 5 }).map((__, j) => (
+                    <td key={j} className="px-4 py-3">
+                      <div className="h-4 bg-zinc-200 rounded animate-pulse" />
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       ) : estudiantes.length === 0 ? (
-        <p className="text-zinc-400 text-sm">No hay estudiantes registrados.</p>
+        <div className="py-12 text-center bg-white rounded-xl border border-zinc-200">
+          <p className="text-zinc-400 text-sm">No hay estudiantes registrados.</p>
+          <button onClick={() => setShowForm(true)} className="mt-3 text-xs px-3 py-1.5 bg-zinc-900 text-white rounded-lg hover:bg-zinc-700 transition-colors">
+            + Registrar primer estudiante
+          </button>
+        </div>
       ) : (
         <div className="bg-white rounded-xl border border-zinc-200 overflow-hidden">
           <table className="w-full text-sm">
@@ -201,11 +228,16 @@ export default function EstudiantesPage() {
             <tbody className="divide-y divide-zinc-100">
               {estudiantes.map((est) => (
                 <tr key={est.id} className="hover:bg-zinc-50 transition-colors">
-                  <td className="px-4 py-3 font-medium text-zinc-800">{est.nombres} {est.apellidos}</td>
+                  <td className="px-4 py-3">
+                    <Link href={`/estudiantes/${est.id}`} className="font-medium text-zinc-800 hover:text-zinc-600 hover:underline">
+                      {est.nombres} {est.apellidos}
+                    </Link>
+                  </td>
                   <td className="px-4 py-3 text-zinc-600">{est.codigoEstudiantil}</td>
                   <td className="px-4 py-3 text-zinc-600">{est.correoInstitucional}</td>
                   <td className="px-4 py-3 text-zinc-600">{est.programaAcademico?.nombre ?? "—"}</td>
                   <td className="px-4 py-3 text-right space-x-2">
+                    <Link href={`/estudiantes/${est.id}`} className="text-xs px-2 py-1 rounded bg-blue-50 hover:bg-blue-100 text-blue-600 transition-colors">Ver</Link>
                     <button onClick={() => handleEdit(est)} className="text-xs px-2 py-1 rounded bg-zinc-100 hover:bg-zinc-200 text-zinc-700 transition-colors">Editar</button>
                     <button onClick={() => handleDelete(est.id)} className="text-xs px-2 py-1 rounded bg-red-50 hover:bg-red-100 text-red-600 transition-colors">Eliminar</button>
                   </td>
