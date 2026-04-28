@@ -1,0 +1,1210 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juego: Construye el Flujo de Archivos — Sistema de Gestión Académica</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+/* ─── BASE & VARIABLES ─── */
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+    --primary:#1e3c72;--secondary:#2a5298;--accent:#ff6b6b;
+    --light:#f8f9fa;--dark:#2c3e50;--border:#e0e0e0;
+    --success:#27ae60;--warning:#f39c12;--info:#3498db;
+    --nest:#e0234e;--next:#000;--pg:#336791;--docker:#2496ed;--prisma:#2d3748;
+    --gold:#ffd700;--xp-bar:#8e44ad;
+}
+body{font-family:'Roboto',sans-serif;line-height:1.6;color:var(--dark);background:#fff}
+
+/* ─── HEADER ─── */
+.main-header{background:linear-gradient(135deg,#0f2027 0%,#203a43 50%,#2c5364 100%);color:#fff}
+.top-bar{background:rgba(0,0,0,.15);padding:20px 0;text-align:center}
+.brand-container{display:flex;flex-direction:column;align-items:center;gap:8px}
+.brand-name{font-size:24px;font-weight:700;letter-spacing:1px}
+.brand-subtitle{font-size:14px;font-weight:300;opacity:.85}
+.main-nav{background:rgba(0,0,0,.25);padding:12px 0;position:sticky;top:0;z-index:100}
+.main-nav ul{list-style:none;display:flex;justify-content:center;flex-wrap:wrap;max-width:1200px;margin:0 auto}
+.main-nav a{color:#fff;text-decoration:none;padding:10px 18px;font-size:13px;font-weight:500;border-bottom:3px solid transparent;transition:.3s}
+.main-nav a:hover,.main-nav a.active{background:rgba(255,255,255,.1);border-bottom-color:var(--accent)}
+.container{max-width:1200px;margin:0 auto;padding:0 20px}
+.main-content{min-height:100vh;padding:40px 0}
+.section{margin:50px 0;padding:40px 0;border-top:1px solid var(--border)}
+.section:first-child{border-top:none}
+.section-title{font-size:30px;font-weight:700;margin-bottom:25px;color:var(--primary);display:flex;align-items:center;gap:12px}
+.section-title i{font-size:32px;color:var(--accent)}
+
+/* ─── SHARED UI ─── */
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px;margin:25px 0}
+.card{border:1px solid var(--border);border-radius:8px;padding:22px;background:#fff;box-shadow:0 2px 4px rgba(0,0,0,.08);transition:.3s}
+.card:hover{transform:translateY(-4px);box-shadow:0 6px 16px rgba(0,0,0,.12)}
+.card-icon{font-size:36px;margin-bottom:12px}
+.card-title{font-size:16px;font-weight:600;margin-bottom:8px}
+.tech-stack{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.tech-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;color:#fff}
+.tech-badge.nest{background:var(--nest)}.tech-badge.next{background:var(--next)}.tech-badge.postgres{background:var(--pg)}.tech-badge.docker{background:var(--docker)}.tech-badge.prisma{background:var(--prisma)}
+.info-box{padding:18px 22px;border-radius:8px;margin:18px 0}
+.info-box.warning{background:#fff3cd;border-left:4px solid var(--warning)}
+.info-box.success{background:#d4edda;border-left:4px solid var(--success)}
+.info-box.info{background:#d1ecf1;border-left:4px solid var(--info)}
+.info-box h4{margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.code-block{background:linear-gradient(135deg,#1e1e1e,#2d2d2d);border-left:5px solid var(--accent);border-radius:8px;padding:20px;margin:20px 0;overflow-x:auto;position:relative;box-shadow:0 4px 12px rgba(0,0,0,.15)}
+.code-block code{font-family:'Fira Code',monospace;font-size:12px;color:#e0e0e0;line-height:1.7;white-space:pre-wrap;display:block}
+.code-block .file-label{position:absolute;top:0;right:0;background:var(--accent);color:#fff;padding:3px 12px;border-radius:0 8px 0 8px;font-size:10px;font-weight:600;font-family:'Fira Code',monospace}
+.hl-kw{color:#c678dd}.hl-deco{color:#e5c07b}.hl-str{color:#98c379}.hl-fn{color:#61afef}.hl-type{color:#e06c75}.hl-comment{color:#5c6370;font-style:italic}.hl-num{color:#d19a66}
+
+/* ─── PLAYER HUD ─── */
+.player-hud{background:linear-gradient(135deg,#0f2027,#203a43);border:2px solid #2c5364;border-radius:12px;padding:18px 28px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;margin-bottom:25px;color:#fff;box-shadow:0 4px 20px rgba(0,0,0,.3)}
+.hud-item{text-align:center;min-width:90px}
+.hud-label{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#7a8c9e;margin-bottom:3px}
+.hud-value{font-size:26px;font-weight:700}
+.hud-value.gold{color:var(--gold)}.hud-value.xp{color:var(--xp-bar)}.hud-value.level{color:#00d2ff}
+.xp-bar-container{width:180px}
+.xp-bar-bg{background:#333;border-radius:10px;height:12px;overflow:hidden;margin-top:4px}
+.xp-bar-fill{background:linear-gradient(90deg,#8e44ad,#3498db);height:100%;border-radius:10px;transition:width .5s}
+.xp-bar-text{font-size:9px;color:#aaa;text-align:center;margin-top:2px}
+
+/* ─── GAME STAGE ─── */
+.game-stage{display:none;animation:fadeIn .5s ease}
+.game-stage.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.stage-progress{display:flex;gap:5px;margin-bottom:20px}
+.stage-dot{height:8px;flex:1;border-radius:4px;background:#e0e0e0;transition:.5s}
+.stage-dot.completed{background:var(--success)}.stage-dot.current{background:var(--info);animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+
+/* ─── FILE NODE ─── */
+.file-pool{display:flex;flex-wrap:wrap;gap:10px;padding:15px;background:#f8f9fa;border-radius:10px;margin:12px 0;min-height:60px;border:1px dashed var(--border)}
+.file-node{
+    display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:10px;
+    font-family:'Fira Code',monospace;font-size:12px;font-weight:600;
+    color:#fff;cursor:grab;user-select:none;transition:.2s;
+    box-shadow:0 2px 8px rgba(0,0,0,.2);
+}
+.file-node:active{cursor:grabbing;transform:scale(1.05);box-shadow:0 4px 14px rgba(0,0,0,.35)}
+.file-node.used{opacity:.35;cursor:default;box-shadow:none}
+.file-node .file-icon{font-size:16px}
+.fn-frontend{background:linear-gradient(135deg,#000,#333)}
+.fn-service-fe{background:linear-gradient(135deg,#f39c12,#e67e22)}
+.fn-api{background:linear-gradient(135deg,#3498db,#2980b9)}
+.fn-main{background:linear-gradient(135deg,#9b59b6,#8e44ad)}
+.fn-controller{background:linear-gradient(135deg,#e0234e,#c0392b)}
+.fn-dto{background:linear-gradient(135deg,#f1c40f,#f39c12);color:#333}
+.fn-service-be{background:linear-gradient(135deg,#27ae60,#219a52)}
+.fn-prisma{background:linear-gradient(135deg,#2d3748,#1a202c)}
+.fn-schema{background:linear-gradient(135deg,#4a5568,#2d3748)}
+.fn-database{background:linear-gradient(135deg,#336791,#2c5072)}
+
+/* ─── FLOW BOARD ─── */
+.flow-board{position:relative;background:linear-gradient(180deg,#f8f9fa 0%,#eef2f7 100%);border:2px solid var(--border);border-radius:14px;padding:25px;margin:20px 0;min-height:120px}
+.flow-lane{display:flex;align-items:center;gap:0;flex-wrap:wrap;margin:8px 0}
+.flow-slot{
+    min-width:140px;min-height:56px;border:2px dashed #ccc;border-radius:10px;
+    display:flex;align-items:center;justify-content:center;padding:6px;
+    background:#fff;transition:.3s;position:relative;
+}
+.flow-slot.over{border-color:var(--info);background:#e3f2fd}
+.flow-slot.filled{border-style:solid;border-color:#bbb}
+.flow-slot.correct-slot{border-color:var(--success);background:#e8f5e9}
+.flow-slot.wrong-slot{border-color:var(--accent);background:#ffebee}
+.flow-slot-label{position:absolute;top:-10px;left:12px;font-size:10px;font-weight:600;background:#fff;padding:0 6px;color:#888;text-transform:uppercase;letter-spacing:.5px}
+.flow-arrow{display:flex;align-items:center;justify-content:center;width:40px;color:var(--accent);font-size:22px;font-weight:700;flex-shrink:0}
+.flow-step-num{
+    position:absolute;top:-8px;right:-8px;width:22px;height:22px;border-radius:50%;
+    background:var(--info);color:#fff;font-size:11px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;z-index:2;
+}
+
+/* ─── CHALLENGE CARD ─── */
+.challenge-card{background:#fff;border:2px solid var(--border);border-radius:12px;padding:28px;margin:18px 0;box-shadow:0 4px 12px rgba(0,0,0,.06)}
+.challenge-card.correct{border-color:var(--success);background:#f0fff4}
+.challenge-card.incorrect{border-color:var(--accent);background:#fff5f5}
+.challenge-header{display:flex;align-items:center;gap:14px;margin-bottom:18px}
+.challenge-number{width:42px;height:42px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;flex-shrink:0}
+.challenge-title{font-size:17px;font-weight:600;color:var(--primary)}
+.challenge-subtitle{font-size:12px;color:#888;margin-top:2px}
+.challenge-question{font-size:15px;margin-bottom:18px;line-height:1.8}
+.difficulty{display:inline-flex;gap:3px;margin-left:8px}
+.difficulty-dot{width:9px;height:9px;border-radius:50%;background:#ddd}
+.difficulty-dot.filled{background:var(--accent)}
+
+/* ─── OPTIONS ─── */
+.options-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0}
+.option-btn{padding:13px 18px;border:2px solid var(--border);border-radius:10px;background:#fff;cursor:pointer;font-size:13px;font-weight:500;text-align:left;transition:.3s;display:flex;align-items:center;gap:10px;font-family:'Roboto',sans-serif}
+.option-btn:hover:not(.disabled){border-color:var(--info);background:#e3f2fd;transform:translateY(-2px)}
+.option-btn.selected{border-color:var(--info);background:#bbdefb}
+.option-btn.correct-answer{border-color:var(--success);background:#c8e6c9}
+.option-btn.wrong-answer{border-color:var(--accent);background:#ffcdd2}
+.option-btn.disabled{cursor:default;opacity:.8}
+.option-letter{width:30px;height:30px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;color:var(--primary)}
+.option-btn.correct-answer .option-letter{border-color:var(--success);background:var(--success);color:#fff}
+.option-btn.wrong-answer .option-letter{border-color:var(--accent);background:var(--accent);color:#fff}
+
+/* ─── DATA PREVIEW ─── */
+.data-preview{background:#0d1117;border:1px solid #333;border-radius:8px;padding:14px;font-family:'Fira Code',monospace;font-size:11px;color:#e0e0e0;line-height:1.6;margin:10px 0;max-height:200px;overflow-y:auto}
+.data-preview .label{color:#7a8c9e;font-size:10px;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;display:block}
+.data-arrow-label{display:flex;align-items:center;gap:8px;margin:6px 0;font-size:12px;color:#888;font-weight:600}
+
+/* ─── COMMUNICATION TYPE BADGES ─── */
+.comm-badge{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:15px;font-size:10px;font-weight:600;color:#fff}
+.comm-badge.fn-call{background:#8e44ad}
+.comm-badge.http{background:#3498db}
+.comm-badge.sql{background:#336791}
+.comm-badge.import{background:#27ae60}
+
+/* ─── ANIMATED FLOW LINE ─── */
+.flow-animation{display:none;margin:20px 0}
+.flow-animation.show{display:block}
+.flow-anim-track{display:flex;align-items:center;gap:0;overflow:hidden;padding:10px 0}
+.flow-anim-node{padding:8px 14px;border-radius:8px;font-family:'Fira Code',monospace;font-size:11px;font-weight:600;color:#fff;opacity:.4;transition:opacity .5s,transform .5s;transform:scale(.9)}
+.flow-anim-node.active{opacity:1;transform:scale(1);box-shadow:0 0 15px rgba(52,152,219,.5)}
+.flow-anim-arrow{width:30px;text-align:center;color:var(--accent);font-weight:700;opacity:.3;transition:opacity .5s}
+.flow-anim-arrow.active{opacity:1}
+.flow-data-packet{
+    display:inline-block;padding:3px 10px;border-radius:12px;font-size:10px;font-weight:600;
+    background:linear-gradient(90deg,var(--info),var(--xp-bar));color:#fff;
+    animation:dataMove 2s ease-in-out infinite;margin-top:4px;
+}
+@keyframes dataMove{0%{transform:translateX(0)}50%{transform:translateX(8px)}100%{transform:translateX(0)}}
+
+/* ─── SCENARIO CARD ─── */
+.scenario-card{background:linear-gradient(135deg,#1a1a2e,#16213e);color:#fff;border-radius:12px;padding:22px;margin:15px 0;box-shadow:0 4px 20px rgba(0,0,0,.2)}
+.scenario-method{display:inline-block;padding:4px 14px;border-radius:6px;font-weight:700;font-family:'Fira Code',monospace;font-size:13px;margin-right:8px}
+.scenario-method.get{background:#27ae60}.scenario-method.post{background:#f39c12}.scenario-method.put{background:#3498db}.scenario-method.delete{background:#e74c3c}
+.scenario-url{font-family:'Fira Code',monospace;font-size:14px;color:#58a6ff}
+.scenario-desc{margin-top:10px;color:#b0bec5;font-size:14px}
+
+/* ─── BUTTONS ─── */
+.verify-btn,.next-btn{
+    padding:12px 30px;border:none;border-radius:10px;font-size:15px;font-weight:600;
+    cursor:pointer;transition:.3s;font-family:'Roboto',sans-serif;color:#fff;
+}
+.verify-btn{background:linear-gradient(135deg,var(--info),#2980b9)}
+.verify-btn:hover{transform:translateY(-2px);box-shadow:0 4px 15px rgba(52,152,219,.4)}
+.next-btn{background:linear-gradient(135deg,var(--primary),var(--secondary))}
+.next-btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(30,60,114,.4)}
+.next-btn.success-btn{background:linear-gradient(135deg,var(--success),#219a52)}
+
+/* ─── HINT ─── */
+.hint-text{display:none;background:#fff3cd;border-left:3px solid var(--warning);padding:10px 14px;border-radius:6px;margin:8px 0;font-size:12px;color:#856404}
+.hint-text.show{display:block}
+
+/* ─── FEEDBACK OVERLAY ─── */
+.feedback-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.55);z-index:1000;justify-content:center;align-items:center}
+.feedback-overlay.show{display:flex}
+.feedback-modal{background:#fff;border-radius:16px;padding:35px;text-align:center;max-width:480px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3);animation:popIn .4s ease}
+@keyframes popIn{from{transform:scale(.8);opacity:0}to{transform:scale(1);opacity:1}}
+.feedback-icon{font-size:56px;margin-bottom:12px}
+.feedback-title{font-size:22px;font-weight:700;margin-bottom:8px}
+.feedback-text{font-size:14px;color:#666;margin-bottom:16px;line-height:1.6}
+.feedback-xp{font-size:18px;font-weight:700;color:var(--xp-bar);margin-bottom:16px}
+
+/* ─── CONFETTI ─── */
+.confetti-container{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:999;overflow:hidden}
+.confetti-piece{position:absolute;width:10px;height:10px;top:-20px;opacity:0;animation:confettiFall 3s ease-in forwards}
+@keyframes confettiFall{0%{top:-10%;opacity:1;transform:rotate(0) translateX(0)}100%{top:110%;opacity:0;transform:rotate(720deg) translateX(100px)}}
+
+/* ─── STAGE COMPLETE ─── */
+.stage-complete{background:linear-gradient(135deg,#667eea,#764ba2);border-radius:16px;padding:35px;text-align:center;color:#fff;margin:25px 0;box-shadow:0 8px 30px rgba(102,126,234,.4)}
+.stage-complete h3{font-size:26px;margin-bottom:8px}.stage-complete .stars{font-size:36px;margin:12px 0}
+
+/* ─── FOOTER ─── */
+.footer{background:var(--dark);color:#fff;padding:35px 0;margin-top:50px}
+.footer-content{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:30px}
+.footer-section h3{margin-bottom:12px;color:var(--accent)}
+.footer-section ul{list-style:none}.footer-section ul li{margin:6px 0}.footer-section a{color:#ccc;text-decoration:none}.footer-section a:hover{color:#fff}
+.footer-bottom{text-align:center;padding-top:16px;border-top:1px solid rgba(255,255,255,.1);margin-top:25px}
+
+/* ─── RESPONSIVE ─── */
+/* ─── TIMER ─── */
+.hud-timer{font-family:'Fira Code',monospace;font-size:28px;font-weight:700;color:#00d2ff;letter-spacing:1px}
+.hud-timer.warning{color:var(--warning);animation:pulse 1s infinite}
+.hud-timer.danger{color:var(--accent);animation:pulse .5s infinite}
+
+/* ─── TEAM FORM ─── */
+.team-form{background:linear-gradient(135deg,#1a1a2e,#16213e);border:2px solid #2c5364;border-radius:16px;padding:30px;margin:25px auto;max-width:520px;color:#fff;box-shadow:0 8px 30px rgba(0,0,0,.3)}
+.team-form h3{font-size:20px;margin-bottom:18px;text-align:center}
+.team-form .form-group{margin-bottom:16px}
+.team-form label{display:block;font-size:13px;font-weight:600;color:#7a8c9e;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+.team-form input{width:100%;padding:12px 16px;border:2px solid #2c5364;border-radius:10px;background:#0d1117;color:#fff;font-size:15px;font-family:'Roboto',sans-serif;transition:.3s}
+.team-form input:focus{outline:none;border-color:var(--info);box-shadow:0 0 10px rgba(52,152,219,.3)}
+.team-form input::placeholder{color:#555}
+.team-form .form-error{color:var(--accent);font-size:12px;margin-top:4px;display:none}
+.team-form .form-error.show{display:block}
+.team-names-display{display:flex;gap:12px;align-items:center;font-size:13px;color:#aab}
+.team-names-display i{color:var(--info)}
+
+/* ─── NOTA DISPLAY ─── */
+.nota-big{font-size:56px;font-weight:700;margin:15px 0}
+.nota-big.excellent{color:#27ae60}.nota-big.good{color:#3498db}.nota-big.acceptable{color:#f39c12}.nota-big.low{color:#e74c3c}
+.nota-scale{font-size:13px;color:#aaa;margin-bottom:12px}
+
+@media(max-width:768px){
+    .section-title{font-size:22px}.main-nav ul{flex-direction:column}
+    .cards-grid,.options-grid{grid-template-columns:1fr}
+    .player-hud{flex-direction:column;text-align:center}
+    .flow-lane{flex-direction:column}.flow-arrow{transform:rotate(90deg)}
+    .flow-slot{min-width:100%}
+    .team-form{margin:15px;padding:20px}
+}
+    </style>
+</head>
+<body>
+<!-- ═══════════ HEADER ═══════════ -->
+<header class="main-header">
+    <div class="top-bar">
+        <div class="container">
+            <div class="brand-container">
+                <img src="https://raw.githubusercontent.com/Memory-Jeancarlo/img/refs/heads/main/corhuila.png" alt="Corhuila" style="max-height:55px">
+                <div class="brand-name">🔗 Juego: Construye el Flujo de Archivos</div>
+                <div class="brand-subtitle">Sistema de Gestión Académica Avanzada — Programación Web</div>
+            </div>
+        </div>
+    </div>
+    <nav class="main-nav">
+        <ul>
+            <li><a href="#intro" class="nav-link active" onclick="navTo(0,event)"><i class="fas fa-play-circle"></i> Inicio</a></li>
+            <li><a href="#round1" class="nav-link" onclick="navTo(1,event)"><i class="fas fa-gamepad"></i> Ronda 1</a></li>
+            <li><a href="#round2" class="nav-link" onclick="navTo(2,event)"><i class="fas fa-gamepad"></i> Ronda 2</a></li>
+            <li><a href="#round3" class="nav-link" onclick="navTo(3,event)"><i class="fas fa-gamepad"></i> Ronda 3</a></li>
+            <li><a href="#round4" class="nav-link" onclick="navTo(4,event)"><i class="fas fa-gamepad"></i> Ronda 4</a></li>
+            <li><a href="#round5" class="nav-link" onclick="navTo(5,event)"><i class="fas fa-gamepad"></i> Ronda 5</a></li>
+            <li><a href="#round6" class="nav-link" onclick="navTo(6,event)"><i class="fas fa-gamepad"></i> Ronda 6</a></li>
+            <li><a href="#round7" class="nav-link" onclick="navTo(7,event)"><i class="fas fa-gamepad"></i> Ronda 7</a></li>
+            <li><a href="#results" class="nav-link" onclick="navTo(8,event)"><i class="fas fa-trophy"></i> Resultados</a></li>
+        </ul>
+    </nav>
+</header>
+
+<div class="confetti-container" id="confettiBox"></div>
+
+<main class="main-content"><div class="container">
+
+<!-- ═══ HUD ═══ -->
+<div class="player-hud">
+    <div class="hud-item"><div class="hud-label">Ronda</div><div class="hud-value level" id="hudRound">—</div></div>
+    <div class="hud-item"><div class="hud-label">Nota</div><div class="hud-value gold" id="hudNota">0.0</div></div>
+    <div class="hud-item"><div class="hud-label">Tiempo</div><div class="hud-timer" id="hudTimer">07:00</div></div>
+    <div class="hud-item"><div class="hud-label">Racha</div><div class="hud-value" id="hudStreak" style="color:#ff6b6b">🔥 0</div></div>
+    <div class="hud-item"><div class="hud-label">Retos</div><div class="hud-value" id="hudDone" style="color:#ccc;font-size:16px">0/14</div></div>
+    <div class="hud-item team-names-display" id="hudTeam" style="display:none"><i class="fas fa-users"></i> <span id="hudTeamNames"></span></div>
+</div>
+<div class="stage-progress" id="stageProgress"></div>
+
+<!-- ═════════════════════════════════════════════════════ -->
+<!--  INTRO                                               -->
+<!-- ═════════════════════════════════════════════════════ -->
+<section id="intro" class="section game-stage active" data-stage="0">
+    <h2 class="section-title"><i class="fas fa-play-circle"></i> Bienvenido: Construye el Flujo</h2>
+    <p style="font-size:17px;margin-bottom:18px">En este juego aprenderás <strong>qué archivos se comunican entre sí</strong> cuando un usuario hace una petición HTTP al sistema. Paso a paso construirás la cadena de archivos reales del proyecto.</p>
+
+    <div class="cards-grid">
+        <div class="card"><div class="card-icon">📂</div><div class="card-title">10 Archivos Reales</div><p>Trabajarás con los archivos reales del proyecto: page.tsx, services, api.ts, controllers, DTOs, schema.prisma y más.</p></div>
+        <div class="card"><div class="card-icon">🔗</div><div class="card-title">7 Rondas</div><p>Cada ronda presenta un escenario HTTP diferente (POST, GET, PUT, DELETE). Construye el flujo correcto arrastrando archivos.</p></div>
+        <div class="card"><div class="card-icon">⚡</div><div class="card-title">14 Retos</div><p>Ordena archivos, identifica la comunicación entre ellos, y responde preguntas sobre el flujo de datos.</p></div>
+    </div>
+
+    <!-- Files Map -->
+    <h3 style="margin-top:30px;font-weight:600;color:var(--primary)">📁 Archivos del Flujo de una Petición</h3>
+    <div style="overflow-x:auto;margin:20px 0">
+        <svg viewBox="0 0 980 380" xmlns="http://www.w3.org/2000/svg" style="max-width:100%">
+            <rect x="0" y="0" width="980" height="380" rx="14" fill="#f8f9fa" stroke="#e0e0e0"/>
+            <!-- Frontend -->
+            <rect x="20" y="20" width="310" height="160" rx="10" fill="#1a1a2e" opacity=".08"/>
+            <text x="175" y="45" font-size="13" font-weight="700" fill="#000" text-anchor="middle">FRONTEND (Next.js)</text>
+            <rect x="35" y="58" width="280" height="32" rx="6" fill="#000"/><text x="175" y="79" font-size="11" fill="#fff" font-family="monospace" text-anchor="middle">📄 app/estudiantes/page.tsx</text>
+            <line x1="175" y1="90" x2="175" y2="104" stroke="#ff6b6b" stroke-width="2" marker-end="url(#arrowR)"/>
+            <rect x="35" y="104" width="280" height="32" rx="6" fill="#e67e22"/><text x="175" y="125" font-size="11" fill="#fff" font-family="monospace" text-anchor="middle">⚙️ services/estudiantes.service.ts</text>
+            <line x1="175" y1="136" x2="175" y2="150" stroke="#ff6b6b" stroke-width="2"/>
+            <rect x="35" y="150" width="280" height="32" rx="6" fill="#3498db"/><text x="175" y="171" font-size="11" fill="#fff" font-family="monospace" text-anchor="middle">🌐 lib/api.ts  →  fetch()</text>
+
+            <!-- Arrow FE → BE -->
+            <line x1="330" y1="115" x2="370" y2="115" stroke="#ff6b6b" stroke-width="3"/>
+            <text x="350" y="105" font-size="9" fill="#888" text-anchor="middle">HTTP</text>
+            <polygon points="370,110 370,120 380,115" fill="#ff6b6b"/>
+
+            <!-- Backend -->
+            <rect x="380" y="20" width="310" height="230" rx="10" fill="#e0234e" opacity=".06"/>
+            <text x="535" y="45" font-size="13" font-weight="700" fill="#c0392b" text-anchor="middle">BACKEND (NestJS)</text>
+            <rect x="395" y="58" width="280" height="28" rx="6" fill="#9b59b6"/><text x="535" y="77" font-size="11" fill="#fff" font-family="monospace" text-anchor="middle">⚡ main.ts (ValidationPipe)</text>
+            <line x1="535" y1="86" x2="535" y2="96" stroke="#ff6b6b" stroke-width="2"/>
+            <rect x="395" y="96" width="280" height="28" rx="6" fill="#e0234e"/><text x="535" y="115" font-size="11" fill="#fff" font-family="monospace" text-anchor="middle">📡 estudiante.controller.ts</text>
+            <line x1="535" y1="124" x2="535" y2="134" stroke="#ff6b6b" stroke-width="2"/>
+            <rect x="395" y="134" width="280" height="28" rx="6" fill="#f1c40f"/><text x="535" y="153" font-size="11" fill="#333" font-family="monospace" text-anchor="middle">🛡️ create-estudiante.dto.ts</text>
+            <line x1="535" y1="162" x2="535" y2="172" stroke="#ff6b6b" stroke-width="2"/>
+            <rect x="395" y="172" width="280" height="28" rx="6" fill="#27ae60"/><text x="535" y="191" font-size="11" fill="#fff" font-family="monospace" text-anchor="middle">⚙️ estudiante.service.ts</text>
+            <line x1="535" y1="200" x2="535" y2="210" stroke="#ff6b6b" stroke-width="2"/>
+            <rect x="395" y="210" width="280" height="28" rx="6" fill="#2d3748"/><text x="535" y="229" font-size="11" fill="#fff" font-family="monospace" text-anchor="middle">🔧 prisma.service.ts (PrismaClient)</text>
+
+            <!-- Arrow BE → DB -->
+            <line x1="690" y1="224" x2="730" y2="224" stroke="#ff6b6b" stroke-width="3"/>
+            <text x="710" y="214" font-size="9" fill="#888" text-anchor="middle">SQL</text>
+            <polygon points="730,219 730,229 740,224" fill="#ff6b6b"/>
+
+            <!-- Database -->
+            <rect x="740" y="190" width="220" height="100" rx="10" fill="#336791" opacity=".1"/>
+            <text x="850" y="218" font-size="13" font-weight="700" fill="#336791" text-anchor="middle">BASE DE DATOS</text>
+            <rect x="755" y="228" width="190" height="28" rx="6" fill="#4a5568"/><text x="850" y="247" font-size="11" fill="#fff" font-family="monospace" text-anchor="middle">📋 schema.prisma</text>
+            <rect x="755" y="264" width="190" height="28" rx="6" fill="#336791"/><text x="850" y="283" font-size="11" fill="#fff" font-family="monospace" text-anchor="middle">💾 PostgreSQL (tabla)</text>
+
+            <!-- Legend -->
+            <text x="490" y="335" font-size="14" font-weight="700" fill="#1e3c72" text-anchor="middle">⬆ Este es el flujo que vas a construir en cada ronda ⬆</text>
+            <text x="490" y="360" font-size="12" fill="#888" text-anchor="middle">Cada archivo pasa datos al siguiente: función → función → HTTP → función → función → SQL</text>
+        </svg>
+    </div>
+
+    <!-- Team Registration -->
+    <div class="team-form" id="teamForm">
+        <h3><i class="fas fa-users"></i> Registro del Equipo</h3>
+        <p style="text-align:center;font-size:13px;color:#aab;margin-bottom:18px">Ingresa los nombres de los dos integrantes del equipo</p>
+        <div class="form-group">
+            <label for="member1"><i class="fas fa-user"></i> Integrante 1</label>
+            <input type="text" id="member1" placeholder="Nombre completo del integrante 1" maxlength="60" autocomplete="off">
+            <div class="form-error" id="err1">⚠ Este campo es obligatorio</div>
+        </div>
+        <div class="form-group">
+            <label for="member2"><i class="fas fa-user"></i> Integrante 2</label>
+            <input type="text" id="member2" placeholder="Nombre completo del integrante 2" maxlength="60" autocomplete="off">
+            <div class="form-error" id="err2">⚠ Este campo es obligatorio</div>
+        </div>
+        <div style="text-align:center;margin-top:20px">
+            <button class="next-btn success-btn" onclick="startGame()" style="font-size:18px;padding:16px 50px">🚀 Comenzar Juego</button>
+        </div>
+    </div>
+</section>
+
+<!-- ═════════════════════════════════════════════════════ -->
+<!--  RONDA 1: POST /estudiante — Flujo de Archivos       -->
+<!-- ═════════════════════════════════════════════════════ -->
+<section id="round1" class="section game-stage" data-stage="1">
+    <h2 class="section-title"><i class="fas fa-file-code" style="color:#e0234e"></i> Ronda 1 — Ordena los Archivos: Crear Estudiante</h2>
+    <div class="scenario-card">
+        <span class="scenario-method post">POST</span>
+        <span class="scenario-url">/api/v1/estudiante</span>
+        <div class="scenario-desc">El usuario llena un formulario en el frontend y presiona "Crear". ¿Por cuáles archivos pasa la petición?</div>
+    </div>
+
+    <!-- Challenge 1: Drag files into order -->
+    <div class="challenge-card" id="r1c1">
+        <div class="challenge-header">
+            <div class="challenge-number">1</div>
+            <div><div class="challenge-title">Arrastra los archivos en el orden correcto del flujo</div>
+            <div class="challenge-subtitle">Desde el click del usuario hasta la base de datos <span class="difficulty"><span class="difficulty-dot filled"></span><span class="difficulty-dot filled"></span><span class="difficulty-dot"></span></span></div></div>
+        </div>
+        <div class="challenge-question">Arrastra cada archivo al slot correspondiente para construir el flujo de la petición POST:</div>
+        <div class="flow-board">
+            <div class="flow-lane" id="r1c1_lane">
+                <div class="flow-slot" data-expect="page.tsx" ondrop="dropFile(event,this)" ondragover="allowDrop(event)" ondragleave="leaveDrop(event)">
+                    <span class="flow-step-num">1</span><span class="flow-slot-label">UI</span>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-slot" data-expect="service.ts" ondrop="dropFile(event,this)" ondragover="allowDrop(event)" ondragleave="leaveDrop(event)">
+                    <span class="flow-step-num">2</span><span class="flow-slot-label">FE Service</span>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-slot" data-expect="api.ts" ondrop="dropFile(event,this)" ondragover="allowDrop(event)" ondragleave="leaveDrop(event)">
+                    <span class="flow-step-num">3</span><span class="flow-slot-label">HTTP Client</span>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-slot" data-expect="controller.ts" ondrop="dropFile(event,this)" ondragover="allowDrop(event)" ondragleave="leaveDrop(event)">
+                    <span class="flow-step-num">4</span><span class="flow-slot-label">BE Route</span>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-slot" data-expect="service-be.ts" ondrop="dropFile(event,this)" ondragover="allowDrop(event)" ondragleave="leaveDrop(event)">
+                    <span class="flow-step-num">5</span><span class="flow-slot-label">BE Logic</span>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-slot" data-expect="prisma.service.ts" ondrop="dropFile(event,this)" ondragover="allowDrop(event)" ondragleave="leaveDrop(event)">
+                    <span class="flow-step-num">6</span><span class="flow-slot-label">ORM</span>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-slot" data-expect="postgresql" ondrop="dropFile(event,this)" ondragover="allowDrop(event)" ondragleave="leaveDrop(event)">
+                    <span class="flow-step-num">7</span><span class="flow-slot-label">BD</span>
+                </div>
+            </div>
+        </div>
+        <div class="file-pool" id="r1c1_pool">
+            <div class="file-node fn-service-be" draggable="true" data-value="service-be.ts" ondragstart="startDrag(event)"><span class="file-icon">⚙️</span> estudiante.service.ts</div>
+            <div class="file-node fn-api" draggable="true" data-value="api.ts" ondragstart="startDrag(event)"><span class="file-icon">🌐</span> lib/api.ts</div>
+            <div class="file-node fn-database" draggable="true" data-value="postgresql" ondragstart="startDrag(event)"><span class="file-icon">💾</span> PostgreSQL</div>
+            <div class="file-node fn-frontend" draggable="true" data-value="page.tsx" ondragstart="startDrag(event)"><span class="file-icon">📄</span> page.tsx</div>
+            <div class="file-node fn-controller" draggable="true" data-value="controller.ts" ondragstart="startDrag(event)"><span class="file-icon">📡</span> estudiante.controller.ts</div>
+            <div class="file-node fn-prisma" draggable="true" data-value="prisma.service.ts" ondragstart="startDrag(event)"><span class="file-icon">🔧</span> prisma.service.ts</div>
+            <div class="file-node fn-service-fe" draggable="true" data-value="service.ts" ondragstart="startDrag(event)"><span class="file-icon">⚙️</span> estudiantes.service.ts (FE)</div>
+        </div>
+        <button class="verify-btn" style="margin-top:12px" onclick="checkFlow('r1c1','r1c1_lane')">✓ Verificar Flujo</button>
+        <div class="hint-text" id="hint_r1c1">💡 <strong>Pista:</strong> El usuario interactúa con page.tsx → el componente llama al service del frontend → ese service usa api.ts con fetch() → la petición llega al controller del backend → delega al service del backend → usa PrismaService → PostgreSQL.</div>
+        <div id="feedback_r1c1"></div>
+    </div>
+
+    <!-- Challenge 2: MC about communication type -->
+    <div class="challenge-card" id="r1c2">
+        <div class="challenge-header">
+            <div class="challenge-number">2</div>
+            <div><div class="challenge-title">¿Qué tipo de comunicación hay entre api.ts y el Controller?</div>
+            <div class="challenge-subtitle">Comunicación entre Frontend y Backend <span class="difficulty"><span class="difficulty-dot filled"></span><span class="difficulty-dot"></span><span class="difficulty-dot"></span></span></div></div>
+        </div>
+        <div class="challenge-question">El archivo <code>lib/api.ts</code> en el frontend necesita comunicarse con <code>estudiante.controller.ts</code> en el backend. ¿Qué tipo de comunicación usa?</div>
+        <div class="options-grid" id="opts_r1c2">
+            <button class="option-btn" onclick="checkMC('r1c2',this,0)"><span class="option-letter">A</span> Llamada directa a función (import)</button>
+            <button class="option-btn" onclick="checkMC('r1c2',this,1)"><span class="option-letter">B</span> Petición HTTP con <code>fetch()</code> a través de la red</button>
+            <button class="option-btn" onclick="checkMC('r1c2',this,2)"><span class="option-letter">C</span> WebSocket bidireccional</button>
+            <button class="option-btn" onclick="checkMC('r1c2',this,3)"><span class="option-letter">D</span> Lectura directa de archivos del backend</button>
+        </div>
+        <div class="hint-text" id="hint_r1c2">💡 <strong>Pista:</strong> Frontend y Backend son aplicaciones SEPARADAS en contenedores Docker diferentes. No pueden importar archivos entre sí.</div>
+        <div id="feedback_r1c2"></div>
+    </div>
+
+    <div style="text-align:center;margin-top:20px"><button class="next-btn" onclick="goTo(2)">Siguiente Ronda →</button></div>
+</section>
+
+<!-- ═════════════════════════════════════════════════════ -->
+<!--  RONDA 2: GET /estudiante — Qué hace cada archivo    -->
+<!-- ═════════════════════════════════════════════════════ -->
+<section id="round2" class="section game-stage" data-stage="2">
+    <h2 class="section-title"><i class="fas fa-search" style="color:#27ae60"></i> Ronda 2 — ¿Qué hace cada archivo? (GET)</h2>
+    <div class="scenario-card">
+        <span class="scenario-method get">GET</span>
+        <span class="scenario-url">/api/v1/estudiante</span>
+        <div class="scenario-desc">El frontend carga la lista de estudiantes al montar la página. ¿Qué hace cada archivo en el camino?</div>
+    </div>
+
+    <!-- Challenge 3 -->
+    <div class="challenge-card" id="r2c1">
+        <div class="challenge-header">
+            <div class="challenge-number">3</div>
+            <div><div class="challenge-title">¿Qué función llama page.tsx para iniciar la petición?</div>
+            <div class="challenge-subtitle">Frontend: page.tsx → service <span class="difficulty"><span class="difficulty-dot filled"></span><span class="difficulty-dot"></span><span class="difficulty-dot"></span></span></div></div>
+        </div>
+        <div class="challenge-question">Cuando <code>page.tsx</code> se monta, necesita cargar la lista de estudiantes. ¿Qué función del service llama?</div>
+        <div class="options-grid" id="opts_r2c1">
+            <button class="option-btn" onclick="checkMC('r2c1',this,0)"><span class="option-letter">A</span> <code>estudiantesService.findAll()</code></button>
+            <button class="option-btn" onclick="checkMC('r2c1',this,1)"><span class="option-letter">B</span> <code>fetch('/api/v1/estudiante')</code> directamente</button>
+            <button class="option-btn" onclick="checkMC('r2c1',this,2)"><span class="option-letter">C</span> <code>prisma.estudiante.findMany()</code></button>
+            <button class="option-btn" onclick="checkMC('r2c1',this,3)"><span class="option-letter">D</span> <code>SELECT * FROM estudiantes</code></button>
+        </div>
+        <div id="feedback_r2c1"></div>
+    </div>
+
+    <!-- Challenge 4 -->
+    <div class="challenge-card" id="r2c2">
+        <div class="challenge-header">
+            <div class="challenge-number">4</div>
+            <div><div class="challenge-title">¿Qué hace api.ts cuando service.ts llama a <code>api.get()</code>?</div>
+            <div class="challenge-subtitle">Frontend: service.ts → api.ts <span class="difficulty"><span class="difficulty-dot filled"></span><span class="difficulty-dot filled"></span><span class="difficulty-dot"></span></span></div></div>
+        </div>
+        <div class="challenge-question">El service del frontend llama <code>api.get&lt;Estudiante[]&gt;("/estudiante")</code>. ¿Qué hace internamente <code>api.ts</code>?</div>
+        <div class="options-grid" id="opts_r2c2">
+            <button class="option-btn" onclick="checkMC('r2c2',this,0)"><span class="option-letter">A</span> Lee el archivo controller.ts del backend directamente</button>
+            <button class="option-btn" onclick="checkMC('r2c2',this,1)"><span class="option-letter">B</span> Construye la URL completa <code>http://localhost:3001/api/v1/estudiante</code> y ejecuta <code>fetch()</code> con método GET</button>
+            <button class="option-btn" onclick="checkMC('r2c2',this,2)"><span class="option-letter">C</span> Envía un WebSocket al puerto 5432</button>
+            <button class="option-btn" onclick="checkMC('r2c2',this,3)"><span class="option-letter">D</span> Conecta directamente a PostgreSQL desde el navegador</button>
+        </div>
+        <div id="feedback_r2c2"></div>
+    </div>
+
+    <div style="text-align:center;margin-top:20px"><button class="next-btn" onclick="goTo(3)">Siguiente Ronda →</button></div>
+</section>
+
+<!-- ═════════════════════════════════════════════════════ -->
+<!--  RONDA 3: PUT /asignatura/:id — Datos entre archivos-->
+<!-- ═════════════════════════════════════════════════════ -->
+<section id="round3" class="section game-stage" data-stage="3">
+    <h2 class="section-title"><i class="fas fa-exchange-alt" style="color:#3498db"></i> Ronda 3 — Datos entre Archivos (PUT)</h2>
+    <div class="scenario-card">
+        <span class="scenario-method put">PUT</span>
+        <span class="scenario-url">/api/v1/asignatura/3</span>
+        <div class="scenario-desc">El usuario edita una asignatura y presiona "Guardar". ¿Qué datos viajan entre cada par de archivos?</div>
+    </div>
+
+    <!-- Challenge 5 -->
+    <div class="challenge-card" id="r3c1">
+        <div class="challenge-header">
+            <div class="challenge-number">5</div>
+            <div><div class="challenge-title">¿Qué datos pasa page.tsx al service del frontend?</div>
+            <div class="challenge-subtitle">El formulario envía datos al service <span class="difficulty"><span class="difficulty-dot filled"></span><span class="difficulty-dot filled"></span><span class="difficulty-dot"></span></span></div></div>
+        </div>
+        <div class="challenge-question">El usuario modifica el nombre de la asignatura en el formulario. ¿Qué recibe <code>asignaturasService.update()</code>?</div>
+        <div class="options-grid" id="opts_r3c1">
+            <button class="option-btn" onclick="checkMC('r3c1',this,0)"><span class="option-letter">A</span> El ID de la asignatura (3) y un objeto con los campos modificados (<code>UpdateAsignaturaDto</code>)</button>
+            <button class="option-btn" onclick="checkMC('r3c1',this,1)"><span class="option-letter">B</span> Solo el nombre nuevo como string</button>
+            <button class="option-btn" onclick="checkMC('r3c1',this,2)"><span class="option-letter">C</span> Un query SQL de UPDATE</button>
+            <button class="option-btn" onclick="checkMC('r3c1',this,3)"><span class="option-letter">D</span> El HTML del formulario completo</button>
+        </div>
+        <div id="feedback_r3c1"></div>
+    </div>
+
+    <!-- Challenge 6: Flow with data annotations -->
+    <div class="challenge-card" id="r3c2">
+        <div class="challenge-header">
+            <div class="challenge-number">6</div>
+            <div><div class="challenge-title">Conecta cada tipo de comunicación con la conexión correcta</div>
+            <div class="challenge-subtitle">Tipos de comunicación entre archivos <span class="difficulty"><span class="difficulty-dot filled"></span><span class="difficulty-dot filled"></span><span class="difficulty-dot filled"></span></span></div></div>
+        </div>
+        <div class="challenge-question">Cada par de archivos se comunica de forma diferente. Arrastra cada tipo de comunicación al par correcto:</div>
+        <div class="flow-board">
+            <div class="flow-lane" id="r3c2_lane">
+                <div class="flow-slot" data-expect="fn-call" ondrop="dropFile(event,this)" ondragover="allowDrop(event)" ondragleave="leaveDrop(event)">
+                    <span class="flow-slot-label">page.tsx → service.ts</span>
+                </div>
+                <div class="flow-arrow">|</div>
+                <div class="flow-slot" data-expect="http-fetch" ondrop="dropFile(event,this)" ondragover="allowDrop(event)" ondragleave="leaveDrop(event)">
+                    <span class="flow-slot-label">api.ts → controller</span>
+                </div>
+                <div class="flow-arrow">|</div>
+                <div class="flow-slot" data-expect="di-inject" ondrop="dropFile(event,this)" ondragover="allowDrop(event)" ondragleave="leaveDrop(event)">
+                    <span class="flow-slot-label">controller → service</span>
+                </div>
+                <div class="flow-arrow">|</div>
+                <div class="flow-slot" data-expect="prisma-query" ondrop="dropFile(event,this)" ondragover="allowDrop(event)" ondragleave="leaveDrop(event)">
+                    <span class="flow-slot-label">service → PostgreSQL</span>
+                </div>
+            </div>
+        </div>
+        <div class="file-pool" id="r3c2_pool">
+            <div class="file-node fn-prisma" draggable="true" data-value="prisma-query" ondragstart="startDrag(event)"><span class="file-icon">🔧</span> Prisma Query (ORM)</div>
+            <div class="file-node fn-api" draggable="true" data-value="http-fetch" ondragstart="startDrag(event)"><span class="file-icon">🌐</span> HTTP fetch() (red)</div>
+            <div class="file-node fn-service-fe" draggable="true" data-value="fn-call" ondragstart="startDrag(event)"><span class="file-icon">📞</span> Llamada a función (import)</div>
+            <div class="file-node fn-controller" draggable="true" data-value="di-inject" ondragstart="startDrag(event)"><span class="file-icon">💉</span> Inyección de Dependencias</div>
+        </div>
+        <button class="verify-btn" style="margin-top:12px" onclick="checkFlow('r3c2','r3c2_lane')">✓ Verificar Conexiones</button>
+        <div class="hint-text" id="hint_r3c2">💡 <strong>Pista:</strong> page.tsx importa el service (llamada a función). api.ts usa fetch() (HTTP por red). El controller recibe la petición y delega al service por Inyección de Dependencias. El service usa Prisma para hablar con la BD.</div>
+        <div id="feedback_r3c2"></div>
+    </div>
+
+    <div style="text-align:center;margin-top:20px"><button class="next-btn" onclick="goTo(4)">Siguiente Ronda →</button></div>
+</section>
+
+<!-- ═════════════════════════════════════════════════════ -->
+<!--  RONDA 4: DELETE /docente/:id — Respuesta de vuelta  -->
+<!-- ═════════════════════════════════════════════════════ -->
+<section id="round4" class="section game-stage" data-stage="4">
+    <h2 class="section-title"><i class="fas fa-reply" style="color:#e74c3c"></i> Ronda 4 — El Camino de Vuelta (DELETE)</h2>
+    <div class="scenario-card">
+        <span class="scenario-method delete">DELETE</span>
+        <span class="scenario-url">/api/v1/docente/5</span>
+        <div class="scenario-desc">El docente fue eliminado. ¿Cómo viaja la <strong>respuesta</strong> de vuelta al navegador?</div>
+    </div>
+
+    <!-- Challenge 7: Reverse flow -->
+    <div class="challenge-card" id="r4c1">
+        <div class="challenge-header">
+            <div class="challenge-number">7</div>
+            <div><div class="challenge-title">Construye el flujo de RESPUESTA (de vuelta)</div>
+            <div class="challenge-subtitle">PostgreSQL → Frontend <span class="difficulty"><span class="difficulty-dot filled"></span><span class="difficulty-dot filled"></span><span class="difficulty-dot filled"></span></span></div></div>
+        </div>
+        <div class="challenge-question">PostgreSQL confirmó que el docente fue eliminado. Ordena los archivos por los que pasa <strong>la respuesta de vuelta</strong>:</div>
+        <div class="flow-board">
+            <div class="flow-lane" id="r4c1_lane">
+                <div class="flow-slot" data-expect="postgresql" ondrop="dropFile(event,this)" ondragover="allowDrop(event)" ondragleave="leaveDrop(event)">
+                    <span class="flow-step-num">1</span><span class="flow-slot-label">BD confirma</span>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-slot" data-expect="service-be.ts" ondrop="dropFile(event,this)" ondragover="allowDrop(event)" ondragleave="leaveDrop(event)">
+                    <span class="flow-step-num">2</span><span class="flow-slot-label">Lógica</span>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-slot" data-expect="interceptor" ondrop="dropFile(event,this)" ondragover="allowDrop(event)" ondragleave="leaveDrop(event)">
+                    <span class="flow-step-num">3</span><span class="flow-slot-label">Envuelve</span>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-slot" data-expect="api.ts" ondrop="dropFile(event,this)" ondragover="allowDrop(event)" ondragleave="leaveDrop(event)">
+                    <span class="flow-step-num">4</span><span class="flow-slot-label">Unwrap</span>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-slot" data-expect="page.tsx" ondrop="dropFile(event,this)" ondragover="allowDrop(event)" ondragleave="leaveDrop(event)">
+                    <span class="flow-step-num">5</span><span class="flow-slot-label">UI Actualiza</span>
+                </div>
+            </div>
+        </div>
+        <div class="file-pool" id="r4c1_pool">
+            <div class="file-node fn-api" draggable="true" data-value="api.ts" ondragstart="startDrag(event)"><span class="file-icon">🌐</span> api.ts (json.data)</div>
+            <div class="file-node fn-frontend" draggable="true" data-value="page.tsx" ondragstart="startDrag(event)"><span class="file-icon">📄</span> page.tsx (re-render)</div>
+            <div class="file-node fn-main" draggable="true" data-value="interceptor" ondragstart="startDrag(event)"><span class="file-icon">📦</span> ResponseInterceptor</div>
+            <div class="file-node fn-database" draggable="true" data-value="postgresql" ondragstart="startDrag(event)"><span class="file-icon">💾</span> PostgreSQL (OK)</div>
+            <div class="file-node fn-service-be" draggable="true" data-value="service-be.ts" ondragstart="startDrag(event)"><span class="file-icon">⚙️</span> docente.service.ts</div>
+        </div>
+        <button class="verify-btn" style="margin-top:12px" onclick="checkFlow('r4c1','r4c1_lane')">✓ Verificar Flujo</button>
+        <div class="hint-text" id="hint_r4c1">💡 <strong>Pista:</strong> PostgreSQL retorna → Service recibe → ResponseInterceptor envuelve en {statusCode, message, data} → api.ts extrae .data → page.tsx actualiza la UI.</div>
+        <div id="feedback_r4c1"></div>
+    </div>
+
+    <!-- Challenge 8 -->
+    <div class="challenge-card" id="r4c2">
+        <div class="challenge-header">
+            <div class="challenge-number">8</div>
+            <div><div class="challenge-title">¿Qué hace el ResponseInterceptor con la respuesta?</div>
+            <div class="challenge-subtitle">Transformación de respuesta <span class="difficulty"><span class="difficulty-dot filled"></span><span class="difficulty-dot filled"></span><span class="difficulty-dot"></span></span></div></div>
+        </div>
+        <div class="challenge-question">El service retorna <code>{ id: 5, nombre: "Juan" }</code>. ¿Qué le pasa a esos datos antes de salir del backend?</div>
+        <div class="options-grid" id="opts_r4c2">
+            <button class="option-btn" onclick="checkMC('r4c2',this,0)"><span class="option-letter">A</span> El ResponseInterceptor los envuelve en <code>{ statusCode: 200, message: "OK", data: { id: 5, nombre: "Juan" } }</code></button>
+            <button class="option-btn" onclick="checkMC('r4c2',this,1)"><span class="option-letter">B</span> Se convierten a XML antes de enviarlos</button>
+            <button class="option-btn" onclick="checkMC('r4c2',this,2)"><span class="option-letter">C</span> Se guardan en caché sin enviarlos</button>
+            <button class="option-btn" onclick="checkMC('r4c2',this,3)"><span class="option-letter">D</span> El Controller los formatea manualmente</button>
+        </div>
+        <div id="feedback_r4c2"></div>
+    </div>
+
+    <div style="text-align:center;margin-top:20px"><button class="next-btn" onclick="goTo(5)">Siguiente Ronda →</button></div>
+</section>
+
+<!-- ═════════════════════════════════════════════════════ -->
+<!--  RONDA 5: Identifica el Archivo por el Código        -->
+<!-- ═════════════════════════════════════════════════════ -->
+<section id="round5" class="section game-stage" data-stage="5">
+    <h2 class="section-title"><i class="fas fa-code" style="color:#8e44ad"></i> Ronda 5 — ¿De qué Archivo es este Código?</h2>
+    <p>Ve un fragmento de código real del proyecto e identifica a qué archivo pertenece.</p>
+
+    <!-- Challenge 9 -->
+    <div class="challenge-card" id="r5c1">
+        <div class="challenge-header">
+            <div class="challenge-number">9</div>
+            <div><div class="challenge-title">¿A qué archivo pertenece este código?</div>
+            <div class="challenge-subtitle">Fragmento #1 <span class="difficulty"><span class="difficulty-dot filled"></span><span class="difficulty-dot filled"></span><span class="difficulty-dot"></span></span></div></div>
+        </div>
+        <div class="code-block"><div class="file-label">???</div><code><span class="hl-kw">const</span> res = <span class="hl-kw">await</span> <span class="hl-fn">fetch</span>(<span class="hl-str">`${BASE_URL}${path}`</span>, options);
+<span class="hl-kw">if</span> (!res.ok) {
+  <span class="hl-kw">const</span> err = <span class="hl-kw">await</span> res.<span class="hl-fn">json</span>();
+  <span class="hl-kw">throw new</span> <span class="hl-type">ApiError</span>(err.statusCode, err.message);
+}
+<span class="hl-kw">const</span> json: <span class="hl-type">ApiResponse</span>&lt;T&gt; = <span class="hl-kw">await</span> res.<span class="hl-fn">json</span>();
+<span class="hl-kw">return</span> json.<span class="hl-fn">data</span>;</code></div>
+        <div class="options-grid" id="opts_r5c1">
+            <button class="option-btn" onclick="checkMC('r5c1',this,0)"><span class="option-letter">A</span> <code>frontend/src/lib/api.ts</code></button>
+            <button class="option-btn" onclick="checkMC('r5c1',this,1)"><span class="option-letter">B</span> <code>backend/src/estudiante/estudiante.controller.ts</code></button>
+            <button class="option-btn" onclick="checkMC('r5c1',this,2)"><span class="option-letter">C</span> <code>backend/src/estudiante/estudiante.service.ts</code></button>
+            <button class="option-btn" onclick="checkMC('r5c1',this,3)"><span class="option-letter">D</span> <code>frontend/src/services/estudiantes.service.ts</code></button>
+        </div>
+        <div id="feedback_r5c1"></div>
+    </div>
+
+    <!-- Challenge 10 -->
+    <div class="challenge-card" id="r5c2">
+        <div class="challenge-header">
+            <div class="challenge-number">10</div>
+            <div><div class="challenge-title">¿A qué archivo pertenece este código?</div>
+            <div class="challenge-subtitle">Fragmento #2 <span class="difficulty"><span class="difficulty-dot filled"></span><span class="difficulty-dot filled"></span><span class="difficulty-dot"></span></span></div></div>
+        </div>
+        <div class="code-block"><div class="file-label">???</div><code><span class="hl-deco">@Post</span>()
+<span class="hl-fn">create</span>(<span class="hl-deco">@Body</span>() dto: <span class="hl-type">CreateEstudianteDto</span>) {
+  <span class="hl-kw">return this</span>.service.<span class="hl-fn">create</span>(dto);
+}</code></div>
+        <div class="options-grid" id="opts_r5c2">
+            <button class="option-btn" onclick="checkMC('r5c2',this,0)"><span class="option-letter">A</span> <code>frontend/src/app/estudiantes/page.tsx</code></button>
+            <button class="option-btn" onclick="checkMC('r5c2',this,1)"><span class="option-letter">B</span> <code>backend/src/estudiante/estudiante.controller.ts</code></button>
+            <button class="option-btn" onclick="checkMC('r5c2',this,2)"><span class="option-letter">C</span> <code>backend/src/estudiante/estudiante.service.ts</code></button>
+            <button class="option-btn" onclick="checkMC('r5c2',this,3)"><span class="option-letter">D</span> <code>backend/src/prisma/prisma.service.ts</code></button>
+        </div>
+        <div id="feedback_r5c2"></div>
+    </div>
+
+    <!-- Challenge 11 -->
+    <div class="challenge-card" id="r5c3">
+        <div class="challenge-header">
+            <div class="challenge-number">11</div>
+            <div><div class="challenge-title">¿A qué archivo pertenece este código?</div>
+            <div class="challenge-subtitle">Fragmento #3 <span class="difficulty"><span class="difficulty-dot filled"></span><span class="difficulty-dot filled"></span><span class="difficulty-dot filled"></span></span></div></div>
+        </div>
+        <div class="code-block"><div class="file-label">???</div><code><span class="hl-kw">const</span> existing = <span class="hl-kw">await this</span>.prisma.estudiante.<span class="hl-fn">findFirst</span>({
+  <span class="hl-fn">where</span>: {
+    OR: [
+      { codigoEstudiantil: dto.codigoEstudiantil },
+      { documentoIdentidad: dto.documentoIdentidad },
+    ],
+  },
+});
+<span class="hl-kw">if</span> (existing) <span class="hl-kw">throw new</span> <span class="hl-type">ConflictException</span>(<span class="hl-str">'...'</span>);
+
+<span class="hl-kw">return this</span>.prisma.estudiante.<span class="hl-fn">create</span>({ data: dto });</code></div>
+        <div class="options-grid" id="opts_r5c3">
+            <button class="option-btn" onclick="checkMC('r5c3',this,0)"><span class="option-letter">A</span> <code>frontend/src/lib/api.ts</code></button>
+            <button class="option-btn" onclick="checkMC('r5c3',this,1)"><span class="option-letter">B</span> <code>backend/src/estudiante/estudiante.controller.ts</code></button>
+            <button class="option-btn" onclick="checkMC('r5c3',this,2)"><span class="option-letter">C</span> <code>backend/src/estudiante/estudiante.service.ts</code></button>
+            <button class="option-btn" onclick="checkMC('r5c3',this,3)"><span class="option-letter">D</span> <code>backend/prisma/schema.prisma</code></button>
+        </div>
+        <div id="feedback_r5c3"></div>
+    </div>
+
+    <div style="text-align:center;margin-top:20px"><button class="next-btn" onclick="goTo(6)">Siguiente Ronda →</button></div>
+</section>
+
+<!-- ═════════════════════════════════════════════════════ -->
+<!--  RONDA 6: POST /matricula — Flujo Completo (IDA+VTA)-->
+<!-- ═════════════════════════════════════════════════════ -->
+<section id="round6" class="section game-stage" data-stage="6">
+    <h2 class="section-title"><i class="fas fa-route" style="color:#f39c12"></i> Ronda 6 — Flujo Completo Ida y Vuelta</h2>
+    <div class="scenario-card">
+        <span class="scenario-method post">POST</span>
+        <span class="scenario-url">/api/v1/matricula</span>
+        <div class="scenario-desc">Crear una matrícula. Construye AMBOS caminos: la petición de ida Y la respuesta de vuelta.</div>
+    </div>
+
+    <!-- Challenge 12: Full round trip -->
+    <div class="challenge-card" id="r6c1">
+        <div class="challenge-header">
+            <div class="challenge-number">12</div>
+            <div><div class="challenge-title">Flujo de IDA: Frontend → Base de Datos</div>
+            <div class="challenge-subtitle">Construye toda la cadena de ida <span class="difficulty"><span class="difficulty-dot filled"></span><span class="difficulty-dot filled"></span><span class="difficulty-dot filled"></span></span></div></div>
+        </div>
+        <div class="flow-board">
+            <div class="flow-lane" id="r6c1_lane">
+                <div class="flow-slot" data-expect="page.tsx" ondrop="dropFile(event,this)" ondragover="allowDrop(event)" ondragleave="leaveDrop(event)">
+                    <span class="flow-step-num">1</span><span class="flow-slot-label">handleSubmit()</span>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-slot" data-expect="service.ts" ondrop="dropFile(event,this)" ondragover="allowDrop(event)" ondragleave="leaveDrop(event)">
+                    <span class="flow-step-num">2</span><span class="flow-slot-label">.create(data)</span>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-slot" data-expect="api.ts" ondrop="dropFile(event,this)" ondragover="allowDrop(event)" ondragleave="leaveDrop(event)">
+                    <span class="flow-step-num">3</span><span class="flow-slot-label">api.post()</span>
+                </div>
+                <div class="flow-arrow" style="color:red;font-size:16px">HTTP →</div>
+                <div class="flow-slot" data-expect="controller.ts" ondrop="dropFile(event,this)" ondragover="allowDrop(event)" ondragleave="leaveDrop(event)">
+                    <span class="flow-step-num">4</span><span class="flow-slot-label">@Post()</span>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-slot" data-expect="service-be.ts" ondrop="dropFile(event,this)" ondragover="allowDrop(event)" ondragleave="leaveDrop(event)">
+                    <span class="flow-step-num">5</span><span class="flow-slot-label">.create(dto)</span>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-slot" data-expect="postgresql" ondrop="dropFile(event,this)" ondragover="allowDrop(event)" ondragleave="leaveDrop(event)">
+                    <span class="flow-step-num">6</span><span class="flow-slot-label">INSERT</span>
+                </div>
+            </div>
+        </div>
+        <div class="file-pool" id="r6c1_pool">
+            <div class="file-node fn-controller" draggable="true" data-value="controller.ts" ondragstart="startDrag(event)"><span class="file-icon">📡</span> matricula.controller.ts</div>
+            <div class="file-node fn-frontend" draggable="true" data-value="page.tsx" ondragstart="startDrag(event)"><span class="file-icon">📄</span> matriculas/page.tsx</div>
+            <div class="file-node fn-database" draggable="true" data-value="postgresql" ondragstart="startDrag(event)"><span class="file-icon">💾</span> PostgreSQL</div>
+            <div class="file-node fn-api" draggable="true" data-value="api.ts" ondragstart="startDrag(event)"><span class="file-icon">🌐</span> lib/api.ts</div>
+            <div class="file-node fn-service-be" draggable="true" data-value="service-be.ts" ondragstart="startDrag(event)"><span class="file-icon">⚙️</span> matricula.service.ts</div>
+            <div class="file-node fn-service-fe" draggable="true" data-value="service.ts" ondragstart="startDrag(event)"><span class="file-icon">⚙️</span> matriculas.service.ts (FE)</div>
+        </div>
+        <button class="verify-btn" style="margin-top:12px" onclick="checkFlow('r6c1','r6c1_lane')">✓ Verificar Ida</button>
+        <div id="feedback_r6c1"></div>
+    </div>
+
+    <!-- Challenge 13 -->
+    <div class="challenge-card" id="r6c2">
+        <div class="challenge-header">
+            <div class="challenge-number">13</div>
+            <div><div class="challenge-title">¿Qué archivo transforma la respuesta cruda del backend en datos limpios para el componente?</div>
+            <div class="challenge-subtitle">El "mediador" de la respuesta <span class="difficulty"><span class="difficulty-dot filled"></span><span class="difficulty-dot filled"></span><span class="difficulty-dot"></span></span></div></div>
+        </div>
+        <div class="challenge-question">PostgreSQL retornó los datos → el Service los procesó → el ResponseInterceptor los envolvió en <code>{statusCode, message, data}</code> → el HTTP response llega al frontend. ¿Qué archivo extrae solo el <code>.data</code> para que el componente trabaje con datos limpios?</div>
+        <div class="options-grid" id="opts_r6c2">
+            <button class="option-btn" onclick="checkMC('r6c2',this,0)"><span class="option-letter">A</span> <code>frontend/src/app/matriculas/page.tsx</code></button>
+            <button class="option-btn" onclick="checkMC('r6c2',this,1)"><span class="option-letter">B</span> <code>frontend/src/services/matriculas.service.ts</code></button>
+            <button class="option-btn" onclick="checkMC('r6c2',this,2)"><span class="option-letter">C</span> <code>frontend/src/lib/api.ts</code></button>
+            <button class="option-btn" onclick="checkMC('r6c2',this,3)"><span class="option-letter">D</span> <code>backend/src/common/interceptors/response.interceptor.ts</code></button>
+        </div>
+        <div id="feedback_r6c2"></div>
+    </div>
+
+    <div style="text-align:center;margin-top:20px"><button class="next-btn" onclick="goTo(7)">Siguiente Ronda →</button></div>
+</section>
+
+<!-- ═════════════════════════════════════════════════════ -->
+<!--  RONDA 7: Desafío Final — Flujo con Errores          -->
+<!-- ═════════════════════════════════════════════════════ -->
+<section id="round7" class="section game-stage" data-stage="7">
+    <h2 class="section-title"><i class="fas fa-exclamation-triangle" style="color:#e74c3c"></i> Ronda 7 — Desafío Final: Flujo con Errores</h2>
+    <p>Cuando algo falla, ¿qué archivos intervienen y cómo viaja el error de vuelta al usuario?</p>
+
+    <!-- Challenge 14: Error scenario -->
+    <div class="challenge-card" id="r7c1">
+        <div class="challenge-header">
+            <div class="challenge-number">14</div>
+            <div><div class="challenge-title">Flujo de ERROR: ValidationPipe rechaza la petición</div>
+            <div class="challenge-subtitle">¿Cómo viaja un error HTTP 400? <span class="difficulty"><span class="difficulty-dot filled"></span><span class="difficulty-dot filled"></span><span class="difficulty-dot filled"></span></span></div></div>
+        </div>
+        <div class="scenario-card" style="margin-bottom:15px">
+            <span class="scenario-method post">POST</span>
+            <span class="scenario-url">/api/v1/estudiante</span>
+            <div class="scenario-desc">El usuario envió el formulario SIN correo electrónico (campo requerido). El ValidationPipe lo detecta.</div>
+        </div>
+        <div class="challenge-question">Ordena los archivos por los que pasa <strong>el error</strong> desde la validación hasta que el usuario ve el mensaje:</div>
+        <div class="flow-board">
+            <div class="flow-lane" id="r7c1_lane">
+                <div class="flow-slot" data-expect="validation" ondrop="dropFile(event,this)" ondragover="allowDrop(event)" ondragleave="leaveDrop(event)">
+                    <span class="flow-step-num">1</span><span class="flow-slot-label">Detecta error</span>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-slot" data-expect="exception-filter" ondrop="dropFile(event,this)" ondragover="allowDrop(event)" ondragleave="leaveDrop(event)">
+                    <span class="flow-step-num">2</span><span class="flow-slot-label">Formatea error</span>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-slot" data-expect="api.ts" ondrop="dropFile(event,this)" ondragover="allowDrop(event)" ondragleave="leaveDrop(event)">
+                    <span class="flow-step-num">3</span><span class="flow-slot-label">Detecta !res.ok</span>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-slot" data-expect="page.tsx" ondrop="dropFile(event,this)" ondragover="allowDrop(event)" ondragleave="leaveDrop(event)">
+                    <span class="flow-step-num">4</span><span class="flow-slot-label">Muestra error</span>
+                </div>
+            </div>
+        </div>
+        <div class="file-pool" id="r7c1_pool">
+            <div class="file-node fn-frontend" draggable="true" data-value="page.tsx" ondragstart="startDrag(event)"><span class="file-icon">📄</span> page.tsx (catch → setError)</div>
+            <div class="file-node fn-main" draggable="true" data-value="exception-filter" ondragstart="startDrag(event)"><span class="file-icon">🚫</span> HttpExceptionFilter</div>
+            <div class="file-node fn-api" draggable="true" data-value="api.ts" ondragstart="startDrag(event)"><span class="file-icon">🌐</span> api.ts (throw ApiError)</div>
+            <div class="file-node fn-dto" draggable="true" data-value="validation" ondragstart="startDrag(event)"><span class="file-icon">🛡️</span> ValidationPipe (HTTP 400)</div>
+        </div>
+        <button class="verify-btn" style="margin-top:12px" onclick="checkFlow('r7c1','r7c1_lane')">✓ Verificar Flujo de Error</button>
+        <div class="hint-text" id="hint_r7c1">💡 <strong>Pista:</strong> ValidationPipe detecta que falta el correo → lanza BadRequestException → HttpExceptionFilter lo formatea como {statusCode:400, message:[...]} → api.ts recibe la respuesta con status 400, detecta !res.ok y lanza ApiError → page.tsx lo captura en catch y llama setError().</div>
+        <div id="feedback_r7c1"></div>
+    </div>
+
+    <div style="text-align:center;margin-top:25px">
+        <button class="next-btn success-btn" onclick="goTo(8)">🏆 Ver Resultados Finales</button>
+    </div>
+</section>
+
+<!-- ═════════════════════════════════════════════════════ -->
+<!--  RESULTADOS                                           -->
+<!-- ═════════════════════════════════════════════════════ -->
+<section id="results" class="section game-stage" data-stage="8">
+    <h2 class="section-title"><i class="fas fa-trophy" style="color:#ffd700"></i> Resultados Finales</h2>
+    <div class="stage-complete" id="finalBox">
+        <h3>🔗 ¡Juego de Flujo Completado!</h3>
+        <div id="fTeamDisplay" style="font-size:15px;opacity:.9;margin:8px 0"></div>
+        <div class="stars" id="fStars">⭐⭐⭐</div>
+        <div class="nota-big" id="fNota">0.0</div>
+        <div class="nota-scale">Escala de calificación: 0.0 — 5.0</div>
+        <p id="fMsg">Cargando...</p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin:25px 0;text-align:center">
+            <div style="background:rgba(255,255,255,.1);border-radius:12px;padding:18px"><div style="font-size:32px;font-weight:700" id="fCorrect">0/14</div><div style="font-size:12px;opacity:.8">Correctas</div></div>
+            <div style="background:rgba(255,255,255,.1);border-radius:12px;padding:18px"><div style="font-size:32px;font-weight:700" id="fStreak">0</div><div style="font-size:12px;opacity:.8">Mejor Racha</div></div>
+            <div style="background:rgba(255,255,255,.1);border-radius:12px;padding:18px"><div style="font-size:32px;font-weight:700" id="fTime">--:--</div><div style="font-size:12px;opacity:.8">Tiempo Usado</div></div>
+        </div>
+        <button class="next-btn" onclick="location.reload()" style="background:linear-gradient(135deg,#ff6b6b,#ee5a24)">🔄 Jugar de Nuevo</button>
+        <a href="JUEGO-API.html" style="display:inline-block;margin-left:12px"><button class="next-btn" style="background:linear-gradient(135deg,#8e44ad,#6c3483)">🎮 Jugar el Quiz de API</button></a>
+    </div>
+
+    <h3 style="margin-top:35px;font-weight:600;color:var(--primary)"><i class="fas fa-brain"></i> Resumen: El Flujo Completo de Archivos</h3>
+    <div style="overflow-x:auto;margin:20px 0">
+        <table style="width:100%;border-collapse:collapse;font-size:13px">
+            <thead><tr style="background:var(--primary);color:#fff">
+                <th style="padding:10px 14px;text-align:left;border-radius:8px 0 0 0">Paso</th>
+                <th style="padding:10px 14px;text-align:left">Archivo</th>
+                <th style="padding:10px 14px;text-align:left">¿Qué Hace?</th>
+                <th style="padding:10px 14px;text-align:left;border-radius:0 8px 0 0">Comunicación</th>
+            </tr></thead>
+            <tbody>
+                <tr style="background:#f8f9fa"><td style="padding:8px 14px;font-weight:700">1</td><td><code>app/…/page.tsx</code></td><td>El usuario interactúa con el formulario y llama handleSubmit()</td><td><span class="comm-badge fn-call">Llamada a función</span></td></tr>
+                <tr><td style="padding:8px 14px;font-weight:700">2</td><td><code>services/….service.ts</code></td><td>Prepara los datos y llama api.post() / api.get()</td><td><span class="comm-badge fn-call">Llamada a función</span></td></tr>
+                <tr style="background:#f8f9fa"><td style="padding:8px 14px;font-weight:700">3</td><td><code>lib/api.ts</code></td><td>Construye URL, ejecuta fetch() por la red</td><td><span class="comm-badge http">HTTP (red)</span></td></tr>
+                <tr><td style="padding:8px 14px;font-weight:700">4</td><td><code>….controller.ts</code></td><td>Recibe la petición HTTP, extrae @Body/@Param</td><td><span class="comm-badge import">Inyección DI</span></td></tr>
+                <tr style="background:#f8f9fa"><td style="padding:8px 14px;font-weight:700">5</td><td><code>….service.ts</code> (BE)</td><td>Valida negocio, llama prisma.modelo.create/find/…</td><td><span class="comm-badge fn-call">Prisma Client</span></td></tr>
+                <tr><td style="padding:8px 14px;font-weight:700">6</td><td><code>prisma.service.ts</code></td><td>Traduce query Prisma a SQL y envía a PostgreSQL</td><td><span class="comm-badge sql">SQL (TCP)</span></td></tr>
+                <tr style="background:#f8f9fa"><td style="padding:8px 14px;font-weight:700">7</td><td><code>PostgreSQL</code></td><td>Ejecuta el SQL y retorna registros</td><td><span class="comm-badge sql">Resultado SQL</span></td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="info-box success">
+        <h4><i class="fas fa-check-circle"></i> Punto clave</h4>
+        <p>Frontend y Backend son <strong>aplicaciones separadas</strong> que solo se comunican por <strong>HTTP</strong>. Dentro de cada aplicación, los archivos se comunican por <strong>importaciones y llamadas a funciones</strong>. El backend habla con PostgreSQL a través de <strong>Prisma (SQL sobre TCP)</strong>.</p>
+    </div>
+</section>
+
+</div></main>
+
+<!-- ═══════════ FEEDBACK OVERLAY ═══════════ -->
+<div class="feedback-overlay" id="feedbackOverlay">
+    <div class="feedback-modal">
+        <div class="feedback-icon" id="fbIcon">✅</div>
+        <div class="feedback-title" id="fbTitle">¡Correcto!</div>
+        <div class="feedback-text" id="fbText"></div>
+        <div class="feedback-xp" id="fbXP">+10 XP</div>
+        <button class="next-btn" onclick="closeFeedback()">Continuar</button>
+    </div>
+</div>
+
+<!-- ═══════════ FOOTER ═══════════ -->
+<footer class="footer"><div class="container">
+    <div class="footer-content">
+        <div class="footer-section"><h3><i class="fas fa-link"></i> Sobre Este Juego</h3><p>Juego interactivo para aprender cómo los archivos se comunican entre sí cuando se hace una petición HTTP en el sistema.</p></div>
+        <div class="footer-section"><h3>Juegos Disponibles</h3><ul>
+            <li><a href="JUEGO-API.html">🎮 Juego: Quiz de API</a></li>
+            <li><a href="JUEGO-FLUJO-ARCHIVOS.html">🔗 Juego: Flujo de Archivos</a></li>
+            <li><a href="GUIA-INTERACTIVA.html">📖 Guía Interactiva</a></li>
+        </ul></div>
+        <div class="footer-section"><h3>Rondas</h3><ul>
+            <li><a href="#round1">Ronda 1 — POST Flujo</a></li><li><a href="#round2">Ronda 2 — GET Funciones</a></li>
+            <li><a href="#round3">Ronda 3 — PUT Comunicación</a></li><li><a href="#round4">Ronda 4 — DELETE Respuesta</a></li>
+            <li><a href="#round5">Ronda 5 — Identifica Código</a></li><li><a href="#round6">Ronda 6 — Ida y Vuelta</a></li>
+            <li><a href="#round7">Ronda 7 — Flujo de Error</a></li>
+        </ul></div>
+    </div>
+    <div class="footer-bottom"><p>&copy; 2026 Programación Web — Ingeniería de Sistemas — CORHUILA. Todos los derechos reservados.</p></div>
+</div></footer>
+
+<!-- ═══════════ JAVASCRIPT ═══════════ -->
+<script>
+/* ═══ STATE ═══ */
+var G = {
+    correct:0, streak:0, maxStreak:0, stage:0,
+    done:0, total:14, answered:{},
+    member1:'', member2:'',
+    timerSeconds:7*60, timerInterval:null, timerRunning:false,
+    startTime:null
+};
+
+/* ═══ TEAM REGISTRATION ═══ */
+function startGame(){
+    var m1=document.getElementById('member1').value.trim();
+    var m2=document.getElementById('member2').value.trim();
+    var ok=true;
+    if(!m1){document.getElementById('err1').classList.add('show');ok=false}else{document.getElementById('err1').classList.remove('show')}
+    if(!m2){document.getElementById('err2').classList.add('show');ok=false}else{document.getElementById('err2').classList.remove('show')}
+    if(!ok) return;
+    G.member1=m1;G.member2=m2;
+    document.getElementById('hudTeam').style.display='flex';
+    document.getElementById('hudTeamNames').textContent=m1+' & '+m2;
+    G.startTime=Date.now();
+    startTimer();
+    goTo(1);
+}
+
+/* ═══ TIMER ═══ */
+function startTimer(){
+    G.timerRunning=true;
+    updateTimerDisplay();
+    G.timerInterval=setInterval(function(){
+        G.timerSeconds--;
+        updateTimerDisplay();
+        if(G.timerSeconds<=0){
+            clearInterval(G.timerInterval);
+            G.timerRunning=false;
+            G.timeUp=true;
+            goTo(8);
+        }
+    },1000);
+}
+function updateTimerDisplay(){
+    var m=Math.floor(G.timerSeconds/60);
+    var s=G.timerSeconds%60;
+    var el=document.getElementById('hudTimer');
+    el.textContent=(m<10?'0':'')+m+':'+(s<10?'0':'')+s;
+    el.className='hud-timer';
+    if(G.timerSeconds<=60) el.classList.add('danger');
+    else if(G.timerSeconds<=120) el.classList.add('warning');
+}
+function getElapsedTime(){
+    if(!G.startTime) return '--:--';
+    var elapsed=Math.floor((Date.now()-G.startTime)/1000);
+    var m=Math.floor(elapsed/60);var s=elapsed%60;
+    return (m<10?'0':'')+m+':'+(s<10?'0':'')+s;
+}
+function getNota(){return parseFloat(((G.correct/G.total)*5).toFixed(1))}
+
+/* ═══ ANSWER KEYS ═══ */
+var MC = {
+    r1c2:{c:1, ex:'¡Correcto! Frontend y Backend son contenedores Docker <strong>separados</strong>. La única forma de comunicarse es por la red con peticiones HTTP. <code>api.ts</code> usa <code>fetch()</code> para enviar la petición a <code>http://localhost:3001/api/v1/...</code>.'},
+    r2c1:{c:0, ex:'¡Exacto! <code>page.tsx</code> NO llama a fetch() directamente ni a prisma. Llama a <code>estudiantesService.findAll()</code> que es una función del service del frontend, y esa función se encarga de hablar con la API.'},
+    r2c2:{c:1, ex:'¡Bien! <code>api.ts</code> concatena <code>BASE_URL + path</code> para formar <code>http://localhost:3001/api/v1/estudiante</code> y luego ejecuta <code>fetch(url, { method: "GET" })</code>. Esto envía un HTTP Request por la red al backend.'},
+    r3c1:{c:0, ex:'¡Correcto! <code>page.tsx</code> pasa el ID y un objeto DTO al service: <code>asignaturasService.update(3, { nombre: "Nuevo nombre" })</code>. El service combina ambos para la petición PUT.'},
+    r4c2:{c:0, ex:'¡Exacto! El <code>ResponseInterceptor</code> (configurado en <code>main.ts</code>) envuelve automáticamente TODA respuesta exitosa del Service en el formato estándar <code>{ statusCode, message, data }</code>.'},
+    r5c1:{c:0, ex:'¡Correcto! Solo <code>lib/api.ts</code> usa <code>fetch()</code>, maneja <code>ApiResponse&lt;T&gt;</code> y retorna <code>json.data</code>. Es el cliente HTTP centralizado del frontend.'},
+    r5c2:{c:1, ex:'¡Bien! Los decoradores <code>@Post()</code> y <code>@Body()</code> son de NestJS y solo aparecen en Controllers. Esta es la función <code>create()</code> del <code>estudiante.controller.ts</code>.'},
+    r5c3:{c:2, ex:'¡Exacto! Este código usa <code>this.prisma.estudiante.findFirst()</code> y <code>this.prisma.estudiante.create()</code>, además de lanzar <code>ConflictException</code>. Son patrones del <strong>Service del backend</strong>, donde vive la lógica de negocio.'},
+    r6c2:{c:2, ex:'¡Correcto! <code>frontend/src/lib/api.ts</code> es el archivo que recibe la respuesta envuelta <code>{statusCode, message, data}</code> y retorna solo <code>json.data</code>. Así los componentes trabajan con datos limpios sin preocuparse por el formato del backend.'},
+};
+
+/* ═══ NAVIGATION ═══ */
+function goTo(s){
+    G.stage=s;
+    document.querySelectorAll('.game-stage').forEach(function(el){el.classList.remove('active')});
+    var t=document.querySelector('[data-stage="'+s+'"]');
+    if(t){t.classList.add('active');t.scrollIntoView({behavior:'smooth',block:'start'})}
+    updateDots();
+    if(s===8) showResults();
+}
+function navTo(s,e){e.preventDefault();goTo(s)}
+function updateDots(){
+    var p=document.getElementById('stageProgress');
+    p.innerHTML='';
+    for(var i=0;i<9;i++){
+        var d=document.createElement('div');d.className='stage-dot';
+        if(i<G.stage) d.classList.add('completed');
+        else if(i===G.stage) d.classList.add('current');
+        p.appendChild(d);
+    }
+}
+updateDots();
+
+/* ═══ HUD ═══ */
+function updateHUD(){
+    document.getElementById('hudNota').textContent=getNota().toFixed(1);
+    document.getElementById('hudRound').textContent=G.stage||'—';
+    document.getElementById('hudStreak').textContent='🔥 '+G.streak;
+    document.getElementById('hudDone').textContent=G.done+'/'+G.total;
+}
+
+function addCorrect(){
+    G.correct++;G.streak++;G.done++;
+    if(G.streak>G.maxStreak) G.maxStreak=G.streak;
+    updateHUD();
+}
+function failStreak(){G.streak=0;G.done++;updateHUD()}
+
+/* ═══ DRAG & DROP ═══ */
+var _dragVal=null,_dragEl=null;
+function startDrag(e){
+    _dragVal=e.target.getAttribute('data-value');
+    _dragEl=e.target;
+    e.dataTransfer.setData('text/plain',_dragVal);
+    e.dataTransfer.effectAllowed='move';
+}
+function allowDrop(e){e.preventDefault();e.currentTarget.classList.add('over')}
+function leaveDrop(e){e.currentTarget.classList.remove('over')}
+function dropFile(e,slot){
+    e.preventDefault();slot.classList.remove('over');
+    if(slot.querySelector('.file-node')) return;
+    var val=e.dataTransfer.getData('text/plain');
+    var pool=slot.closest('.challenge-card').querySelectorAll('.file-node');
+    var el=null;
+    pool.forEach(function(n){if(n.getAttribute('data-value')===val&&!n.classList.contains('used')) el=n});
+    if(!el) return;
+    // Keep step num and label
+    var stepNum=slot.querySelector('.flow-step-num');
+    var label=slot.querySelector('.flow-slot-label');
+    slot.innerHTML='';
+    if(stepNum) slot.appendChild(stepNum);
+    if(label) slot.appendChild(label);
+    var clone=el.cloneNode(true);
+    clone.style.fontSize='11px';clone.style.padding='6px 10px';clone.draggable=false;
+    slot.appendChild(clone);
+    slot.classList.add('filled');
+    el.classList.add('used');
+}
+
+/* ═══ CHECK FLOW (drag order) ═══ */
+function checkFlow(cid,laneId){
+    if(G.answered[cid]) return;
+    var lane=document.getElementById(laneId);
+    var slots=lane.querySelectorAll('.flow-slot');
+    var allFilled=true,allOk=true;
+    slots.forEach(function(s){
+        var exp=s.getAttribute('data-expect');
+        var node=s.querySelector('.file-node');
+        if(!node){allFilled=false;return}
+        if(node.getAttribute('data-value')===exp) s.classList.add('correct-slot');
+        else{s.classList.add('wrong-slot');allOk=false}
+    });
+    if(!allFilled){
+        document.getElementById('feedback_'+cid).innerHTML='<div class="info-box warning"><h4><i class="fas fa-exclamation-triangle"></i> Incompleto</h4><p>Arrastra todos los archivos a los slots antes de verificar.</p></div>';
+        return;
+    }
+    G.answered[cid]=true;
+    if(allOk){addCorrect();showFB(true,'¡Flujo perfecto! Has construido correctamente la cadena de archivos.',true)}
+    else{failStreak();showFB(false,'Algunos archivos están en la posición incorrecta. Los bordes verdes son correctos, los rojos no.',false)}
+}
+
+/* ═══ CHECK MC ═══ */
+function checkMC(cid,btn,idx){
+    if(G.answered[cid]) return;
+    G.answered[cid]=true;
+    var key=MC[cid];var correct=key.c===idx;
+    var btns=document.querySelectorAll('#opts_'+cid+' .option-btn');
+    btns.forEach(function(b,i){b.classList.add('disabled');if(i===key.c) b.classList.add('correct-answer')});
+    if(!correct){btn.classList.add('wrong-answer');failStreak();showFB(false,key.ex,false)}
+    else{addCorrect();showFB(true,key.ex,true)}
+}
+
+/* ═══ FEEDBACK MODAL ═══ */
+function showFB(ok,html,isCorrect){
+    document.getElementById('fbIcon').textContent=ok?'✅':'❌';
+    document.getElementById('fbTitle').textContent=ok?'¡Correcto!':'Incorrecto';
+    document.getElementById('fbTitle').style.color=ok?'var(--success)':'var(--accent)';
+    document.getElementById('fbText').innerHTML=html;
+    var nota=getNota();
+    document.getElementById('fbXP').textContent=ok?'Nota actual: '+nota.toFixed(1)+' / 5.0':'Racha perdida 💔';
+    document.getElementById('fbXP').style.color=ok?'var(--success)':'var(--accent)';
+    document.getElementById('feedbackOverlay').classList.add('show');
+    if(ok) confetti();
+}
+function closeFeedback(){document.getElementById('feedbackOverlay').classList.remove('show')}
+
+/* ═══ CONFETTI ═══ */
+function confetti(){
+    var c=document.getElementById('confettiBox');
+    var cols=['#ff6b6b','#ffd700','#27ae60','#3498db','#8e44ad','#e0234e','#f39c12'];
+    for(var i=0;i<25;i++){
+        var p=document.createElement('div');p.className='confetti-piece';
+        p.style.left=Math.random()*100+'%';
+        p.style.backgroundColor=cols[Math.floor(Math.random()*cols.length)];
+        p.style.animationDelay=Math.random()+'s';
+        p.style.animationDuration=(2+Math.random()*2)+'s';
+        p.style.width=(6+Math.random()*8)+'px';p.style.height=(6+Math.random()*8)+'px';
+        p.style.borderRadius=Math.random()>.5?'50%':'2px';
+        c.appendChild(p);
+    }
+    setTimeout(function(){c.innerHTML=''},4000);
+}
+
+/* ═══ HINTS ═══ */
+document.querySelectorAll('.challenge-card').forEach(function(card){
+    var h=card.querySelector('.hint-text');
+    if(h){
+        var obs=new IntersectionObserver(function(entries){
+            entries.forEach(function(en){
+                if(en.isIntersecting){
+                    setTimeout(function(){if(!G.answered[card.id]) h.classList.add('show')},12000);
+                    obs.unobserve(en.target);
+                }
+            });
+        },{threshold:.5});
+        obs.observe(card);
+    }
+});
+
+/* ═══ RESULTS ═══ */
+function showResults(){
+    if(G.timerInterval){clearInterval(G.timerInterval);G.timerRunning=false}
+    var nota=getNota();
+    var notaEl=document.getElementById('fNota');
+    notaEl.textContent=nota.toFixed(1);
+    notaEl.className='nota-big';
+    if(nota>=4.5) notaEl.classList.add('excellent');
+    else if(nota>=3.5) notaEl.classList.add('good');
+    else if(nota>=3.0) notaEl.classList.add('acceptable');
+    else notaEl.classList.add('low');
+    document.getElementById('fCorrect').textContent=G.correct+'/'+G.total;
+    document.getElementById('fStreak').textContent=G.maxStreak;
+    document.getElementById('fTime').textContent=getElapsedTime();
+    if(G.member1||G.member2){
+        document.getElementById('fTeamDisplay').innerHTML='<i class="fas fa-users"></i> '+G.member1+' & '+G.member2;
+    }
+    var stars,msg;
+    if(nota>=4.5){stars='⭐⭐⭐';msg='¡Excelente! Dominas completamente cómo se comunican los archivos en el sistema.'}
+    else if(nota>=3.5){stars='⭐⭐';msg='¡Muy bien! Tienes buena comprensión del flujo. Repasa las rondas donde fallaste.'}
+    else if(nota>=3.0){stars='⭐';msg='Aprobado. Revisa la Guía Interactiva para afianzar conceptos.'}
+    else{stars='☆';msg='No alcanzaste la nota mínima (3.0). Revisa el diagrama de flujo en la intro y vuelve a jugar.'}
+    if(G.timeUp){msg='⏰ ¡Se acabó el tiempo! '+msg+' (Completaste '+G.done+' de '+G.total+' retos)'}
+    document.getElementById('fStars').textContent=stars;
+    document.getElementById('fMsg').textContent=msg;
+    confetti();setTimeout(confetti,1500);
+}
+
+/* ═══ INTERSECTION ANIM ═══ */
+document.addEventListener('DOMContentLoaded',function(){
+    var obs=new IntersectionObserver(function(entries){
+        entries.forEach(function(en){
+            if(en.isIntersecting){en.target.style.opacity='1';en.target.style.transform='translateY(0)'}
+        });
+    },{threshold:.1});
+    document.querySelectorAll('.card,.challenge-card').forEach(function(el){
+        el.style.opacity='0';el.style.transform='translateY(20px)';
+        el.style.transition='opacity .6s ease, transform .6s ease';
+        obs.observe(el);
+    });
+    updateHUD();
+});
+</script>
+</body>
+</html>

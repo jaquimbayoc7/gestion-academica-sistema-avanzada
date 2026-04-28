@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-const modules = [
+const modules: { href: string; title: string; description: string; icon: string; sprint: string; linkTo?: string }[] = [
   {
     href: "/programas",
     title: "Programas Académicos",
@@ -58,18 +58,20 @@ const modules = [
     sprint: "Sprint 3",
   },
   {
-    href: "/estudiantes",
+    href: "/estudiantes/perfil",
     title: "Perfil Estudiante",
     description: "Detalle con historial de matrículas y notas",
     icon: "📊",
     sprint: "Sprint 4",
+    linkTo: "/estudiantes",
   },
   {
-    href: "/docentes",
+    href: "/docentes/perfil",
     title: "Perfil Docente",
     description: "Detalle con asignaciones por período",
     icon: "🏫",
     sprint: "Sprint 4",
+    linkTo: "/docentes",
   },
 ];
 
@@ -96,7 +98,7 @@ export default function HomePage() {
         {modules.map((mod) => (
           <Link
             key={mod.href}
-            href={mod.href}
+            href={mod.linkTo ?? mod.href}
             className="block p-5 bg-white rounded-xl border border-zinc-200 hover:border-zinc-400 hover:shadow-md transition-all group"
           >
             <div className="flex items-start justify-between mb-3">
