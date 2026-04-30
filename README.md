@@ -1,19 +1,36 @@
 # 🎓 Sistema de Gestión Académica
 
-> Proyecto full-stack guiado por el docente — Programación Avanzada 2026A
-> **Estado al 27 de Abril 2026:** Release 2 entregado ✅ — Sprints 1-5 completos
+<p align="center">
+  <strong>Proyecto full-stack guiado por el docente · Programación Avanzada 2026A</strong><br>
+  <em>Corporación Universitaria del Huila — CORHUILA · Ingeniería de Sistemas</em>
+</p>
 
-[![NestJS](https://img.shields.io/badge/NestJS-10-E0234E?style=for-the-badge&logo=nestjs&logoColor=white)](https://nestjs.com/)
-[![Next.js](https://img.shields.io/badge/Next.js-16.2.1-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791?style=for-the-badge&logo=postgresql&logoColor=white)](http://www.postgresql.org/)
-[![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
-[![Prisma](https://img.shields.io/badge/Prisma-7.5-2D3748?style=for-the-badge&logo=prisma&logoColor=white)](https://www.prisma.io/)
-[![Issues closed](https://img.shields.io/github/issues-closed/jaquimbayoc7/gestion-academica-sistema-avanzada?style=for-the-badge)](https://github.com/jaquimbayoc7/gestion-academica-sistema-avanzada/issues?q=is%3Aissue+is%3Aclosed)
+<p align="center">
+  <img src="https://img.shields.io/badge/NestJS-10-E0234E?style=for-the-badge&logo=nestjs&logoColor=white" alt="NestJS"/>
+  <img src="https://img.shields.io/badge/Next.js-15-000000?style=for-the-badge&logo=nextdotjs&logoColor=white" alt="Next.js"/>
+  <img src="https://img.shields.io/badge/PostgreSQL-16-336791?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL"/>
+  <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker"/>
+  <img src="https://img.shields.io/badge/Prisma-7.5-2D3748?style=for-the-badge&logo=prisma&logoColor=white" alt="Prisma"/>
+  <img src="https://img.shields.io/badge/TypeScript-5-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript"/>
+</p>
+
+<p align="center">
+  <a href="https://github.com/jaquimbayoc7/gestion-academica-sistema-avanzada/issues?q=is%3Aissue+is%3Aclosed">
+    <img src="https://img.shields.io/github/issues-closed/jaquimbayoc7/gestion-academica-sistema-avanzada?style=flat-square&label=Issues%20cerrados" alt="Issues cerrados"/>
+  </a>
+  <img src="https://img.shields.io/badge/Estado-Release%202%20✅-brightgreen?style=flat-square" alt="Estado"/>
+  <img src="https://img.shields.io/badge/Sprints-5%20de%205%20completos-blue?style=flat-square" alt="Sprints"/>
+</p>
+
+---
+
+> **Estado al 29 de Abril 2026:** Release 2 entregado ✅ — Sprints 1-5 completos
 
 ---
 
 ## 📋 Tabla de Contenidos
 
+- [🚀 Inicio Rápido (para estudiantes)](#-inicio-rápido-para-estudiantes)
 - [Descripción del Proyecto](#-descripción-del-proyecto)
 - [Stack Tecnológico](#-stack-tecnológico)
 - [Arquitectura](#-arquitectura)
@@ -25,10 +42,102 @@
 - [Smoke Tests](#-smoke-tests)
 - [Tablero Kanban](#-tablero-kanban)
 - [Instalación y Ejecución](#-instalación-y-ejecución)
+- [Solución de Problemas](#-solución-de-problemas)
 
 ---
 
-## 📖 Descripción del Proyecto
+## � Inicio Rápido (para estudiantes)
+
+> Sigue estos pasos **en orden**. Si tienes Docker instalado, el proyecto levanta completo con un solo comando.
+
+### Prerrequisitos mínimos
+
+| Herramienta | Versión mínima | Descarga |
+|---|---|---|
+| **Git** | cualquiera | [git-scm.com](https://git-scm.com/downloads) |
+| **Docker Desktop** | 4.x | [docker.com/products/docker-desktop](https://www.docker.com/products/docker-desktop/) |
+| **Node.js** | 22 LTS | [nodejs.org](https://nodejs.org/) *(solo para desarrollo local o smoke tests)* |
+
+> ⚠️ Asegúrate de que **Docker Desktop esté corriendo** antes de continuar.
+
+---
+
+### Opción A — Con Docker (recomendada, sin instalar nada más)
+
+```bash
+# 1. Clonar el repositorio
+git clone https://github.com/jaquimbayoc7/gestion-academica-sistema-avanzada.git
+cd gestion-academica-sistema-avanzada
+
+# 2. Crear el archivo de variables de entorno
+cp .env.example .env          # Linux / macOS
+copy .env.example .env        # Windows (CMD / PowerShell)
+
+# 3. Levantar todo (base de datos + backend + frontend)
+docker compose up --build
+
+# ✅ Listo — espera a ver el mensaje "Ready on http://localhost:3000"
+```
+
+| Servicio | URL |
+|---|---|
+| **Frontend** | http://localhost:3000 |
+| **API REST** | http://localhost:3001/api/v1 |
+| **Health check** | http://localhost:3001/api/v1/health |
+
+> La primera vez puede tardar 3-5 minutos mientras Docker descarga las imágenes y construye los contenedores. Las siguientes veces es mucho más rápido.
+
+```bash
+# Para detener todo:
+docker compose down
+
+# Para detener y eliminar los datos de la base de datos:
+docker compose down -v
+```
+
+---
+
+### Opción B — Desarrollo local (hot-reload)
+
+Ideal cuando estás modificando el código y quieres ver los cambios al instante.
+
+```bash
+# 1. Clonar y configurar .env (igual que arriba)
+git clone https://github.com/jaquimbayoc7/gestion-academica-sistema-avanzada.git
+cd gestion-academica-sistema-avanzada
+copy .env.example .env    # Windows
+
+# 2. Solo la base de datos en Docker
+docker compose up db
+
+# 3. Instalar dependencias y migrar (desde la carpeta backend/)
+cd backend
+npm install
+npx prisma migrate dev    # aplica las migraciones en la BD local
+npx prisma generate       # genera el cliente Prisma
+npm run start:dev         # → http://localhost:3001  (hot-reload)
+
+# 4. En otra terminal, instalar y correr el frontend (desde frontend/)
+cd ../frontend
+npm install
+npm run dev               # → http://localhost:3000  (hot-reload)
+```
+
+---
+
+### Verificar que todo funciona
+
+```bash
+# Desde la carpeta smoke-tests/ (requiere backend corriendo)
+cd smoke-tests
+npm install
+npm test
+# Deberías ver: ✅ 47 tests pasando
+```
+
+---
+
+## �📖 Descripción del Proyecto
 
 El **Sistema de Gestión Académica** es una aplicación web full-stack que permite administrar el proceso académico de una institución educativa: registro de estudiantes, docentes, programas, asignaturas, períodos académicos, matrículas y calificaciones.
 
@@ -129,15 +238,6 @@ proyecto/
 │       └── lib/
 │           └── api.ts              # Cliente HTTP base
 └── INSIGHTS.md                     # Análisis de sprints y métricas del proyecto
-```
-├── frontend/                       # Interfaz con Next.js
-│   ├── Dockerfile
-│   └── src/
-│       ├── app/                    # App Router (páginas)
-│       ├── services/               # Capa de acceso a la API
-│       ├── types/                  # Tipos TypeScript
-│       └── lib/                    # Utilidades
-└── README.md
 ```
 
 ---
@@ -416,10 +516,12 @@ npm test
 
 ## ⚙ Instalación y Ejecución
 
+> Esta sección contiene el detalle completo. Si solo quieres levantar el proyecto rápido, ve a [Inicio Rápido](#-inicio-rápido-para-estudiantes).
+
 ### Prerrequisitos
 
-- [Docker](https://www.docker.com/products/docker-desktop/) y Docker Compose instalados
-- [Node.js 22+](https://nodejs.org/) para desarrollo local
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) y Docker Compose instalados
+- [Node.js 22 LTS](https://nodejs.org/) (para desarrollo local y smoke tests)
 - [Git](https://git-scm.com/downloads)
 
 ### Clonar el repositorio
@@ -436,17 +538,33 @@ cp .env.example .env   # Linux/macOS
 copy .env.example .env  # Windows
 ```
 
+El archivo `.env.example` ya tiene valores listos para desarrollo:
+
 ```env
-# .env (valores de ejemplo para desarrollo)
-DB_USER=admin
-DB_PASSWORD=admin123
-DB_NAME=gestion_academica_db
-DATABASE_URL=postgresql://admin:admin123@localhost:5432/gestion_academica_db
+# .env — valores por defecto para desarrollo local
+DB_USER=postgres
+DB_PASSWORD=postgres
+DB_NAME=gestion_academica
+
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/gestion_academica"
 PORT=3001
 NEXT_PUBLIC_API_URL=http://localhost:3001/api/v1
 ```
 
-### Flujo de desarrollo recomendado
+> ⚠️ **No compartas tu `.env` real en el repositorio.** El `.gitignore` ya lo excluye.
+
+### Levantar con Docker (todo en uno)
+
+```bash
+docker compose up --build        # primera vez (construye imágenes)
+docker compose up                # siguientes veces (sin reconstruir)
+docker compose up -d             # modo silencioso (background)
+docker compose logs -f backend   # ver logs del backend en tiempo real
+docker compose down              # detener y eliminar contenedores
+docker compose down -v           # detener y también borrar los datos
+```
+
+### Flujo de desarrollo local (hot-reload)
 
 ```bash
 # 1. Solo la base de datos en Docker
@@ -454,6 +572,7 @@ docker compose up db
 
 # 2. Migraciones Prisma (desde backend/)
 cd backend
+npm install
 npx prisma migrate dev      # crea y aplica en desarrollo
 npx prisma generate         # regenerar cliente si cambia el schema
 
@@ -462,15 +581,8 @@ npm run start:dev           # → http://localhost:3001
 
 # 4. Frontend local (desde frontend/)
 cd ../frontend
+npm install
 npm run dev                 # → http://localhost:3000
-```
-
-### Levantar TODO con Docker (opcional)
-
-```bash
-docker compose up --build -d      # levanta db + backend + frontend
-docker compose logs -f backend    # ver logs del backend
-docker compose down               # detener todo
 ```
 
 ### Acceder a los servicios
@@ -479,15 +591,79 @@ docker compose down               # detener todo
 |---|---|
 | **Frontend (Next.js)** | [http://localhost:3000](http://localhost:3000) |
 | **API REST (NestJS)** | [http://localhost:3001/api/v1](http://localhost:3001/api/v1) |
-| **Health Check** | [http://localhost:3001/api/v1](http://localhost:3001/api/v1) |
-| **PostgreSQL** | `localhost:5432` · DB: `gestion_academica_db` |
+| **Health Check** | [http://localhost:3001/api/v1/health](http://localhost:3001/api/v1/health) |
+| **PostgreSQL** | `localhost:5432` · DB: `gestion_academica` |
 
 ### Ejecutar smoke tests
 
 ```bash
 # Requisito: backend corriendo en localhost:3001
 cd smoke-tests
+npm install
 npm test
+
+# Con PowerShell (verifica salud del backend antes de ejecutar):
+./run-all.ps1
+```
+
+---
+
+## 🛠 Solución de Problemas
+
+### Docker no levanta el backend
+
+**Síntoma:** el backend queda en estado `unhealthy` o en bucle de reinicios.
+
+```bash
+# Ver los logs del backend para diagnosticar:
+docker compose logs backend
+
+# Solución más común: reconstruir desde cero
+docker compose down -v
+docker compose up --build
+```
+
+### Error: `port is already allocated`
+
+Algún proceso ya usa el puerto 3000, 3001 o 5432.
+
+```bash
+# Windows — ver qué ocupa el puerto (ejemplo con 3001):
+netstat -ano | findstr :3001
+# Luego matar el proceso con su PID:
+taskkill /PID <PID> /F
+
+# Linux / macOS:
+lsof -ti:3001 | xargs kill -9
+```
+
+### Error de Prisma: `P1001` o `Can't reach database server`
+
+El backend intenta conectar a la base de datos antes de que esté lista.
+
+```bash
+# Espera unos segundos y vuelve a intentar, o reinicia solo el backend:
+docker compose restart backend
+```
+
+### Las migraciones no se aplican
+
+```bash
+# Desde la carpeta backend/ con la base de datos corriendo:
+npx prisma migrate dev
+npx prisma generate
+```
+
+### El frontend no conecta con el backend (CORS / red)
+
+Verifica que en tu `.env` la variable `NEXT_PUBLIC_API_URL` apunte a `http://localhost:3001/api/v1` (no a `db` ni al nombre de contenedor).
+
+### Limpiar todo y empezar de cero
+
+```bash
+docker compose down -v          # elimina contenedores y volumen de datos
+docker system prune -f          # elimina imágenes y caché sin usar
+docker compose up --build       # reconstruye desde cero
 ```
 
 ---
@@ -496,10 +672,10 @@ npm test
 
 | Recurso | Enlace |
 |---|---|
-| � Insights del Proyecto | [INSIGHTS.md](./INSIGHTS.md) |
+| 📊 Insights del Proyecto | [INSIGHTS.md](./INSIGHTS.md) |
 | 📋 Tablero Kanban | [GitHub Projects #3](https://github.com/users/jaquimbayoc7/projects/3) |
 | 📌 Todos los Issues | [Ver Issues](https://github.com/jaquimbayoc7/gestion-academica-sistema-avanzada/issues?q=is%3Aissue) |
-| ✅ Issues cerrados | [Sprint 1-3 Done](https://github.com/jaquimbayoc7/gestion-academica-sistema-avanzada/issues?q=is%3Aissue+is%3Aclosed) |
+| ✅ Issues cerrados | [Sprint 1-5 Done](https://github.com/jaquimbayoc7/gestion-academica-sistema-avanzada/issues?q=is%3Aissue+is%3Aclosed) |
 | 🏁 Milestone Sprint 1 | [Sprint 1](https://github.com/jaquimbayoc7/gestion-academica-sistema-avanzada/milestone/1) |
 | 🏁 Milestone Sprint 2 | [Sprint 2](https://github.com/jaquimbayoc7/gestion-academica-sistema-avanzada/milestone/2) |
 | 🏁 Milestone Sprint 3 | [Sprint 3](https://github.com/jaquimbayoc7/gestion-academica-sistema-avanzada/milestone/3) |
@@ -511,5 +687,6 @@ npm test
 
 <p align="center">
   <strong>Programación Avanzada — Ingeniería de Sistemas — 2026A</strong><br>
-  <em>Corporación Universitaria del Huila — CORHUILA</em>
+  <em>Corporación Universitaria del Huila — CORHUILA</em><br><br>
+  <sub>Hecho con ❤️ como proyecto demostrativo para el curso</sub>
 </p>
